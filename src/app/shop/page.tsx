@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { AUTH_TOKEN_KEY, clearSession, getStoredUser, type FizziUser } from "@/lib/auth";
 import { Product3D } from "@/components/Product3D";
+import { FulkyAssistant } from "@/components/FulkyAssistant";
 import styles from "./shop.module.css";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
@@ -56,7 +57,7 @@ export default function ShopPage() {
   if (!user) return <div className={styles.loading}>Opening the good stuff…</div>;
 
   return <main className={styles.page}>
-    <nav className={styles.nav}><Link href="/" className={styles.logo}>fizzi<span>✦</span></Link><span className={styles.tag}>THE GOOD STUFF / 001</span><div><span className={styles.hello}>Hey, {user.firstName || "friend"}</span><button onClick={() => { clearSession(); router.replace("/"); }}>Log out</button></div></nav>
+    <nav className={styles.nav}><Link href="/" className={styles.logo}>fizzi<span>✦</span></Link><span className={styles.tag}>THE GOOD STUFF / 001</span><div><span className={styles.hello}>Hey, {user.firstName || "friend"}</span><FulkyAssistant /><button onClick={() => { clearSession(); router.replace("/"); }}>Log out</button></div></nav>
     <section className={styles.hero}><div><p className={styles.eyebrow}>✳ MEMBERS’ FRIDGE</p><h1>Pick your<br /><em>good thing.</em></h1><p className={styles.lede}>Four sparkling fruit sodas. Real ingredients. A seriously good day in every case.</p></div><div className={styles.heroCan}><img src="/textures/Watermelon.png" alt="Watermelon Crush can" /></div></section>
     <section className={styles.products} aria-label="Fizzi products"><div className={styles.productsTitle}><p className={styles.eyebrow}>THE FULL FRIDGE</p><h2>Find your fizz.</h2>{notice && <span role="status">{notice}</span>}</div>{productsError ? <p className={styles.empty}>{productsError}</p> : products.length === 0 ? <p className={styles.empty}>No active products are in the fridge yet.</p> : <div className={styles.grid}>{products.map((product) => <article className={styles.card} key={product._id} style={{ "--flavor": product.tone || "#159bd7" } as CSSProperties}><div className={styles.art}><Product3D product={{ id: product._id, name: product.name, tone: product.tone }} /></div><p className={styles.cardNo}>{product.packSize || "24 CANS · 330ML"}</p><h3>{product.name}</h3><p>{product.description}</p><div className={styles.buy}><strong>{new Intl.NumberFormat("en-IN", { style: "currency", currency: product.currency || "INR" }).format(product.price)}</strong><button onClick={() => addToBasket(product._id)}>Add a case <b>→</b></button></div></article>)}</div>}</section>
     <footer className={styles.footer}><span>FULL OF FIZZ. FULL OF FEELING.</span><Link href="/">Back to Fizzi ↗</Link></footer>

@@ -13,6 +13,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import fulkyRoutes from './routes/fulkyRoutes.js';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/fulky', fulkyRoutes);
 
 // 404 handler
 app.use((req, res) => {
