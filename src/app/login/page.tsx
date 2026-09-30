@@ -11,6 +11,7 @@ import styles from "./login.module.css";
 type Mode = "login" | "signup";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
+const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://localhost:5173";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");
@@ -49,6 +50,10 @@ export default function LoginPage() {
       if (!data.token || !data.user) throw new Error("Your account was created, but we couldn't start your session. Please log in.");
       saveSession(data.token, data.user);
       setSuccess(isSignup ? "Your Fizzi account is ready." : `Welcome back${data.user?.firstName ? `, ${data.user.firstName}` : ""}.`);
+      if (data.user.role && data.user.role !== "customer") {
+        window.setTimeout(() => window.location.assign(`${adminUrl}/?token=${encodeURIComponent(data.token)}#/dashboard`), 300);
+        return;
+      }
       const next = searchParams.get("next");
       const destination = next?.startsWith("/") && !next.startsWith("//") ? next : "/shop";
       window.setTimeout(() => router.replace(destination), 700);
