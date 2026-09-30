@@ -16,7 +16,5 @@ npm run build
 npm run preview
 ```
 
-## Image credits
+This repository contains the customer-facing storefront only.
 
-- Watermelon photo by Gaurav Dhwaj Khadka, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Watermelon_3.jpg), CC BY-SA 4.0.
-- Citrus photo, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Citrus_Variety.JPG), public domain.

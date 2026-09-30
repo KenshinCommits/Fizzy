@@ -7,10 +7,6 @@ import cherryCan from "@/assets/can-cherry-lime.png";
 import mapleCan from "@/assets/can-maple-ginger.png";
 import raspberryCan from "@/assets/can-raspberry.png";
 
-import watermelonFruit from "@/assets/fruit-watermelon.jpg";
-import citrusFruit from "@/assets/fruit-citrus.jpg";
-import raspberryFruit from "@/assets/fruit-raspberry.png";
-
 import slide1 from "@/assets/slide-1.png";
 import slide2 from "@/assets/slide-2.png";
 import slide3 from "@/assets/slide-3.png";
@@ -19,14 +15,11 @@ import slide4 from "@/assets/slide-4.png";
 import CanScene3D from "@/components/CanScene3D";
 import FluidRibbon from "@/components/FluidRibbon";
 
-const mangoFruit = "/textures/fruit-mango.png";
-
 type Flavor = {
   id: string;
   title: string[];
   description: string;
   image: string;
-  fruit: string;
   bgImage: string;
   color: string;
   textColor: string;
@@ -45,7 +38,6 @@ const flavors: Flavor[] = [
     title: ["watermelon", "crush"],
     description: "Cooler sips, bigger days. Refreshing sparkling watermelon craft soda made with real fruit juice, clean ingredients, and crisp bubbles.",
     image: "/textures/Watermelon.png",
-    fruit: watermelonFruit,
     bgImage: slide1,
     color: "#e44d4d",
     textColor: "#212121",
@@ -62,7 +54,6 @@ const flavors: Flavor[] = [
     title: ["yuzu citrus", "fizz"],
     description: "Bright citrus, bigger days. Zesty sparkling yuzu juice packed with sun-ripened citrus notes, natural flavours, and low sugar refreshment.",
     image: "/textures/FizzyLemonTexture.png",
-    fruit: citrusFruit,
     bgImage: slide2,
     color: "#f3cc36",
     textColor: "#212121",
@@ -79,7 +70,6 @@ const flavors: Flavor[] = [
     title: ["berry", "wave"],
     description: "Mixed berries, higher moods. Crisp sparkling mixed berry and grape fusion bursting with dark berry sweetness and fizzy delight.",
     image: "/textures/FizzyGrapeTexture.png",
-    fruit: raspberryFruit,
     bgImage: slide3,
     color: "#9255ad",
     textColor: "#212121",
@@ -96,7 +86,6 @@ const flavors: Flavor[] = [
     title: ["mango", "splash"],
     description: "Juicy mango, endless summer. Pure tropical sunshine and real mango juice with sparkling soda bubbles, low calories, and good vibes.",
     image: "/textures/FizzyMangoTexture.png",
-    fruit: mangoFruit,
     bgImage: slide4,
     color: "#f47b20",
     textColor: "#212121",
@@ -129,7 +118,6 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const stageRef = useRef<HTMLElement>(null);
-  const fruitRefs = useRef<(HTMLDivElement | null)[]>([]);
   const copyRef = useRef<HTMLDivElement>(null);
   const countRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -169,20 +157,6 @@ function HomePage() {
     }
   }, [basket]);
 
-  // Keep the active fruit in place and stage the other flavors offscreen right.
-  useEffect(() => {
-    fruitRefs.current.forEach((fruitEl, index) => {
-      if (!fruitEl) return;
-      gsap.set(fruitEl, {
-        xPercent: index === 0 ? 0 : 150,
-        yPercent: -50,
-        autoAlpha: index === 0 ? 1 : 0,
-        scale: index === 0 ? 1 : 0.82,
-        rotation: index === 0 ? 0 : 90,
-      });
-    });
-  }, []);
-
   // Transition to target flavor with authentic Kombu can rolling & sliding
   const goToFlavor = useCallback(
     (targetIndex: number) => {
@@ -197,9 +171,6 @@ function HomePage() {
 
       isTransitioning.current = true;
       const direction = targetIndex > activeFlavor ? 1 : -1;
-      const currentFruit = fruitRefs.current[activeFlavor];
-      const nextFruit = fruitRefs.current[targetIndex];
-
       // Immediately activate new flavor for 3D rolling cans and fluid ribbon
       setActiveFlavor(targetIndex);
 
@@ -221,41 +192,6 @@ function HomePage() {
             ease: "power2.in",
           },
           0
-        );
-      }
-
-      // Bring the matching fruit in from the same side as the incoming can.
-      if (currentFruit && nextFruit) {
-        tl.to(
-          currentFruit,
-          {
-            xPercent: -150 * direction,
-            autoAlpha: 0,
-            scale: 0.82,
-            rotation: -90 * direction,
-            duration: 0.72,
-            ease: "power2.in",
-          },
-          0
-        ).fromTo(
-          nextFruit,
-          {
-            xPercent: 150 * direction,
-            yPercent: -50,
-            autoAlpha: 0,
-            scale: 0.82,
-            rotation: 90 * direction,
-          },
-          {
-            xPercent: 0,
-            yPercent: -50,
-            autoAlpha: 1,
-            scale: 1,
-            rotation: 0,
-            duration: 1.05,
-            ease: "power2.out",
-          },
-          0.08
         );
       }
 
@@ -514,20 +450,6 @@ function HomePage() {
           canImages={flavors.map((f) => f.image)}
           flavorColors={flavors.map((f) => f.color)}
         />
-
-        <div className="flavor-fruit-stage" aria-hidden="true">
-          {flavors.map((flavor, index) => (
-            <div
-              className="flavor-fruit"
-              key={flavor.id}
-              ref={(element) => {
-                fruitRefs.current[index] = element;
-              }}
-            >
-              <img src={flavor.fruit} alt="" />
-            </div>
-          ))}
-        </div>
 
         {/* Side Scroll Indicator */}
         <div className="story-scroll-note" aria-hidden="true">
