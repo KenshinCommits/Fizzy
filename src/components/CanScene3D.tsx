@@ -129,13 +129,11 @@ export default function CanScene3D({
 
     canImages.forEach((imgUrl, index) => {
       const canGroup = new THREE.Group();
-      const baseGroup = new THREE.Group();
       const spinGroup = new THREE.Group();
 
       // Can body texture
       const texture = textureLoader.load(imgUrl);
       texture.colorSpace = THREE.SRGBColorSpace;
-      texture.flipY = false;
       texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
       texture.minFilter = THREE.LinearMipmapLinearFilter;
       texture.magFilter = THREE.LinearFilter;
@@ -220,11 +218,7 @@ export default function CanScene3D({
       botRim.position.y = -CAN_HEIGHT / 2 - 0.22;
       spinGroup.add(botRim);
 
-      // Base group holds the correct initial orientation (e.g., -Math.PI if it was backward)
-      baseGroup.rotation.y = -Math.PI;
-      baseGroup.add(spinGroup);
-      
-      canGroup.add(baseGroup);
+      canGroup.add(spinGroup);
       spinGroupsRef.current.push(spinGroup);
 
       // Position the can group along the horizontal track
