@@ -90,6 +90,12 @@ export default function Scene({ sentence, flavor }: SkyDiveProps) {
       duration: DURATION,
     });
 
+    const updateStorefrontVisibility = (progress: number) => {
+      document
+        .querySelector(".story-container")
+        ?.classList.toggle("is-ready", progress >= 1);
+    };
+
     const scrollTl = gsap.timeline({
       scrollTrigger: {
         trigger: ".skydive",
@@ -97,6 +103,8 @@ export default function Scene({ sentence, flavor }: SkyDiveProps) {
         start: "top top",
         end: "+=2000",
         scrub: 1.5,
+        onUpdate: (self) => updateStorefrontVisibility(self.progress),
+        onRefresh: (self) => updateStorefrontVisibility(self.progress),
       },
     });
 
@@ -130,6 +138,9 @@ export default function Scene({ sentence, flavor }: SkyDiveProps) {
         ease: "back.in(1.7)",
       })
       .to(cloudsRef.current.position, { z: 7, duration: 0.5 });
+
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh();
   });
 
   return (

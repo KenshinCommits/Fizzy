@@ -1,9 +1,20 @@
 .story-container {
+  position: relative;
+  z-index: 40;
   min-height: 100svh;
   overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
   color: #17352f;
   background: #f4e7b4;
   font-family: "Nunito Sans", sans-serif;
+}
+
+.story-container.is-ready {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .story-stage {

@@ -112,6 +112,9 @@ const flavors: Flavor[] = [
   },
 ];
 
+const flavorCanImages = flavors.map((flavor) => flavor.image);
+const flavorColors = flavors.map((flavor) => flavor.color);
+
 type BasketLine = { id: string; quantity: number };
 const BASKET_KEY = "fizzy-basket-v1";
 
@@ -484,8 +487,8 @@ export default function Carousel({ slice }: CarouselProps) {
         {/* Photorealistic 3D Cans Viewport: Exactly in the middle with 3D cylinder roll physics */}
         <CanScene3D
           activeFlavor={activeFlavor}
-          canImages={flavors.map((f) => f.image)}
-          flavorColors={flavors.map((f) => f.color)}
+          canImages={flavorCanImages}
+          flavorColors={flavorColors}
         />
 
         {/* Decorative fruit layer removed to keep the stage clean and product-focused. */}

@@ -21,7 +21,6 @@ export default function CanScene3D({
   const cansRef = useRef<THREE.Group[]>([]);
   const spinGroupsRef = useRef<THREE.Group[]>([]);
   const shadowsRef = useRef<THREE.Mesh[]>([]);
-  const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const animFrameId = useRef<number | null>(null);
   const prevActiveRef = useRef(activeFlavor);
   const dragAngleRef = useRef({ value: 0 });
@@ -241,17 +240,6 @@ export default function CanScene3D({
       shadowsRef.current.push(shadowMesh);
     });
 
-    // Start initial continuous spin on the active can
-    const initialSpinGroup = spinGroupsRef.current[activeFlavor];
-    if (initialSpinGroup) {
-      gsap.to(initialSpinGroup.rotation, {
-        y: `+=${Math.PI * 2}`,
-        duration: 3.2,
-        ease: "none",
-        repeat: -1,
-      });
-    }
-
     // 6. Handle window resize
     const handleResize = () => {
       if (!container || !camera || !renderer) return;
@@ -262,16 +250,6 @@ export default function CanScene3D({
       renderer.setSize(w, h);
     };
     window.addEventListener("resize", handleResize);
-
-    // 7. Mouse move tracking for 3D parallax tilt
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      mousePos.current.targetX = x;
-      mousePos.current.targetY = y;
-    };
-    window.addEventListener("mousemove", handleMouseMove);
 
     const handlePointerDown = (event: PointerEvent) => {
       isDraggingRef.current = true;
@@ -327,18 +305,14 @@ export default function CanScene3D({
       animFrameId.current = requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
 
-      // Smooth mouse lerp
-      mousePos.current.x += (mousePos.current.targetX - mousePos.current.x) * 0.08;
-      mousePos.current.y += (mousePos.current.targetY - mousePos.current.y) * 0.08;
-
-      // Ambient floating & mouse tilt on active can
+      // Keep the active can front-facing while it floats.
       cansRef.current.forEach((can, i) => {
         const shadow = shadowsRef.current[i];
         if (Math.abs(can.position.x) < 0.8) {
-          // Can is close to center: apply subtle breathing float and 3D mouse reaction
           const floatOffset = Math.sin(time * 2.2) * 0.05;
           can.position.y = floatOffset;
-          can.rotation.x = -mousePos.current.y * 0.16;
+          can.rotation.x = 0;
+          can.rotation.z = 0;
 
           if (shadow) {
             shadow.position.y = -CAN_HEIGHT / 2 - 0.28 + floatOffset * 0.3;
@@ -355,7 +329,6 @@ export default function CanScene3D({
     return () => {
       if (animFrameId.current) cancelAnimationFrame(animFrameId.current);
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("pointerdown", handlePointerDown);
       container.removeEventListener("pointermove", handlePointerMove);
       container.removeEventListener("pointerup", handlePointerUp);
@@ -397,10 +370,6 @@ export default function CanScene3D({
         if (isCurrentActive) gsap.set(spinGroup.rotation, { y: 0 });
       }
 
-      const rollLean = isCurrentActive || isPreviousActive
-        ? (activeFlavor > prevActiveRef.current ? -0.22 : 0.22)
-        : 0;
-
       // Incoming active can starts just off the screen on the right/left and rolls into place.
       if (isCurrentActive) {
         gsap.set(can.position, { x: targetX + direction * CAN_SPACING * 1.25 });
@@ -431,19 +400,6 @@ export default function CanScene3D({
           repeat: -1,
         });
       }
-
-      // Subtle roll lean on Z-axis (settles back to 0)
-      gsap.timeline()
-        .to(can.rotation, {
-          z: rollLean,
-          duration: 0.45,
-          ease: "power2.out",
-        })
-        .to(can.rotation, {
-          z: 0,
-          duration: 0.5,
-          ease: "power2.inOut",
-        });
 
       // Shadow position & scale
       if (shadow) {
