@@ -17,16 +17,34 @@ const flavorTextures = {
 
 export type SodaCanProps = {
   flavor?: keyof typeof flavorTextures;
-  scale?: number;
+  scale?: number | [number, number, number];
+  scaleX?: number;
+  scaleY?: number;
+  scaleZ?: number;
 };
 
 export function SodaCan({
   flavor = "watermelon",
   scale = 2,
+  scaleX,
+  scaleY,
+  scaleZ,
   ...props
 }: SodaCanProps) {
   const { scene } = useGLTF("/FizzyCan.glb");
   const texture = useTexture(flavorTextures[flavor] || flavorTextures.watermelon);
+
+  const effectiveScale = useMemo(() => {
+    if (scaleX !== undefined || scaleY !== undefined || scaleZ !== undefined) {
+      const baseScale = typeof scale === "number" ? scale : 1;
+      return [
+        (scaleX ?? 1) * baseScale,
+        (scaleY ?? 1) * baseScale,
+        (scaleZ ?? 1) * baseScale,
+      ] as [number, number, number];
+    }
+    return scale;
+  }, [scale, scaleX, scaleY, scaleZ]);
 
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
@@ -93,7 +111,7 @@ export function SodaCan({
   }, [scene, texture]);
 
   return (
-    <group {...props} dispose={null} scale={scale} rotation={[0, -Math.PI, 0]}>
+    <group {...props} dispose={null} scale={effectiveScale} rotation={[0, -Math.PI, 0]}>
       <primitive object={clonedScene} scale={5} />
     </group>
   );

@@ -34,9 +34,8 @@ export default function Index() {
     <main>
       <Hero slice={dummySlice} index={0} slices={[]} context={{}} />
       <SkyDive slice={dummySlice} index={1} slices={[]} context={{}} />
-      <Carousel slice={dummySlice} index={2} slices={[]} context={{}} />
-      <AlternatingText slice={dummySlice} index={3} slices={[]} context={{}} />
-      <BigText slice={dummySlice} index={4} slices={[]} context={{}} />
+      <AlternatingText slice={dummySlice} index={2} slices={[]} context={{}} />
+      <Carousel slice={dummySlice} index={3} slices={[]} context={{}} />
     </main>
   );
 }

@@ -14,6 +14,9 @@ type FloatingCanProps = {
   floatingRange?: [number, number];
   children?: ReactNode;
   scale?: number;
+  scaleX?: number;
+  scaleY?: number;
+  scaleZ?: number;
 };
 
 const FloatingCan = forwardRef<Group, FloatingCanProps>(
@@ -26,6 +29,9 @@ const FloatingCan = forwardRef<Group, FloatingCanProps>(
       floatingRange = [-0.1, 0.1],
       children,
       scale,
+      scaleX,
+      scaleY,
+      scaleZ,
       ...props
     },
     ref,
@@ -39,7 +45,7 @@ const FloatingCan = forwardRef<Group, FloatingCanProps>(
           floatingRange={floatingRange}
         >
           {children}
-          <SodaCan flavor={flavor} scale={scale} />
+          <SodaCan flavor={flavor} scale={scale} scaleX={scaleX} scaleY={scaleY} scaleZ={scaleZ} />
         </Float>
       </group>
     );

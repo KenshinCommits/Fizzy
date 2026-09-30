@@ -1,165 +1,801 @@
 "use client";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+}
 import { Content } from "@prismicio/client";
-import {
-  PrismicRichText,
-  PrismicText,
-  SliceComponentProps,
-} from "@prismicio/react";
-import { Center, Environment, View } from "@react-three/drei";
-import { useRef, useState } from "react";
-import clsx from "clsx";
-import { Group } from "three";
-import gsap from "gsap";
+import { SliceComponentProps } from "@prismicio/react";
+import "./storefront.css";
 
-import FloatingCan from "@/components/FloatingCan";
-import { SodaCanProps } from "@/components/SodaCan";
-import { ArrowIcon } from "./ArrowIcon";
-import { WavyCircles } from "./WavyCircles";
+import strawberryCan from "@/assets/can-strawberry.png";
+import cherryCan from "@/assets/can-cherry-lime.png";
+import mapleCan from "@/assets/can-maple-ginger.png";
+import raspberryCan from "@/assets/can-raspberry.png";
 
-const SPINS_ON_CHANGE = 8;
-const FLAVORS: {
-  flavor: SodaCanProps["flavor"];
+import strawberryFruit from "@/assets/fruit-strawberry.png";
+import cherryFruit from "@/assets/fruit-cherry-lime.png";
+import mapleFruit from "@/assets/fruit-maple-ginger.png";
+import raspberryFruit from "@/assets/fruit-raspberry.png";
+
+import slide1 from "@/assets/slide-1.png";
+import slide2 from "@/assets/slide-2.png";
+import slide3 from "@/assets/slide-3.png";
+import slide4 from "@/assets/slide-4.png";
+
+import CanScene3D from "@/components/CanScene3D";
+import FluidRibbon from "@/components/FluidRibbon";
+
+type Flavor = {
+  id: string;
+  title: string[];
+  description: string;
+  image: string;
+  fruit: string;
+  bgImage: string;
   color: string;
-  name: string;
-}[] = [
-    { flavor: "blackCherry", color: "#710523", name: "Black Cherry" },
-    { flavor: "grape", color: "#572981", name: "Grape Goodness" },
-    { flavor: "lemonLime", color: "#164405", name: "Lemon Lime" },
-    {
-      flavor: "strawberryLemonade",
-      color: "#690B3D",
-      name: "Strawberry Lemonade",
+  textColor: string;
+  bg: {
+    left: string;
+    right: string;
+    accent: string;
+  };
+  pack: string;
+  price: string;
+};
+
+const flavors: Flavor[] = [
+  {
+    id: "watermelon-crush",
+    title: ["watermelon", "crush"],
+    description: "Cooler sips, bigger days. Refreshing sparkling watermelon craft soda made with real fruit juice, clean ingredients, and crisp bubbles.",
+    image: "/textures/Watermelon.png",
+    fruit: strawberryFruit.src,
+    bgImage: slide1.src,
+    color: "#e5c6cc",
+    textColor: "#212121",
+    bg: {
+      left: "#d9d5ef",
+      right: "#f4ecc9",
+      accent: "#f0e3b5",
     },
-    { flavor: "watermelon", color: "#4B7002", name: "Watermelon Crush" },
-  ];
+    pack: "A case of 24 cans (330ml)",
+    price: "$74.50",
+  },
+  {
+    id: "yuzu-citrus-fizz",
+    title: ["yuzu citrus", "fizz"],
+    description: "Bright citrus, bigger days. Zesty sparkling yuzu juice packed with sun-ripened citrus notes, natural flavours, and low sugar refreshment.",
+    image: "/textures/FizzyLemonTexture.png",
+    fruit: cherryFruit.src,
+    bgImage: slide2.src,
+    color: "#d8ddbe",
+    textColor: "#212121",
+    bg: {
+      left: "#dfe7d6",
+      right: "#f7f0d0",
+      accent: "#e8dcaf",
+    },
+    pack: "A case of 24 cans (330ml)",
+    price: "$74.50",
+  },
+  {
+    id: "berry-wave",
+    title: ["berry", "wave"],
+    description: "Mixed berries, higher moods. Crisp sparkling mixed berry and grape fusion bursting with dark berry sweetness and fizzy delight.",
+    image: "/textures/FizzyGrapeTexture.png",
+    fruit: raspberryFruit.src,
+    bgImage: slide3.src,
+    color: "#d7d1ef",
+    textColor: "#212121",
+    bg: {
+      left: "#d6d1eb",
+      right: "#f3e7c7",
+      accent: "#e8d9a5",
+    },
+    pack: "A case of 24 cans (330ml)",
+    price: "$74.50",
+  },
+  {
+    id: "mango-splash",
+    title: ["mango", "splash"],
+    description: "Juicy mango, endless summer. Pure tropical sunshine and real mango juice with sparkling soda bubbles, low calories, and good vibes.",
+    image: "/textures/FizzyMangoTexture.png",
+    fruit: mapleFruit.src,
+    bgImage: slide4.src,
+    color: "#e9d7c2",
+    textColor: "#212121",
+    bg: {
+      left: "#e6d9d3",
+      right: "#f4edd0",
+      accent: "#e2d1a5",
+    },
+    pack: "A case of 24 cans (330ml)",
+    price: "$74.50",
+  },
+];
 
-/**
- * Props for `Carousel`.
- */
+type BasketLine = { id: string; quantity: number };
+const BASKET_KEY = "fizzy-basket-v1";
+
 export type CarouselProps = SliceComponentProps<Content.CarouselSlice>;
+export default function Carousel({ slice }: CarouselProps) {
+  const stageRef = useRef<HTMLElement>(null);
+  const fruitRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const copyRef = useRef<HTMLDivElement>(null);
+  const countRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const descRef = useRef<HTMLParagraphElement>(null);
 
-/**
- * Component for "Carousel" Slices.
- */
-const Carousel = ({ slice }: CarouselProps): JSX.Element => {
-  const [currentFlavorIndex, setCurrentFlavorIndex] = useState(0);
-  const sodaCanRef = useRef<Group>(null);
+  const [activeFlavor, setActiveFlavor] = useState(0);
+  const [basket, setBasket] = useState<BasketLine[]>([]);
+  const [panel, setPanel] = useState<"menu" | "basket" | "details" | "story" | null>(null);
+  const [toast, setToast] = useState("");
 
-  function changeFlavor(index: number) {
-    if (!sodaCanRef.current) return;
+  const currentFlavorRef = useRef(activeFlavor);
+  const stRef = useRef<ScrollTrigger | null>(null);
 
-    const nextIndex = (index + FLAVORS.length) % FLAVORS.length;
-
-    const tl = gsap.timeline();
-
-    tl.to(
-      sodaCanRef.current.rotation,
-      {
-        y:
-          index > currentFlavorIndex
-            ? `-=${Math.PI * 2 * SPINS_ON_CHANGE}`
-            : `+=${Math.PI * 2 * SPINS_ON_CHANGE}`,
-        ease: "power2.inOut",
-        duration: 1,
-      },
-      0,
-    )
-      .to(
-        ".background, .wavy-circles-outer, .wavy-circles-inner",
-        {
-          backgroundColor: FLAVORS[nextIndex].color,
-          fill: FLAVORS[nextIndex].color,
-          ease: "power2.inOut",
-          duration: 1,
+  useEffect(() => {
+    if (!stageRef.current) return;
+    const snapValues = flavors.map((_, i) => i / (flavors.length - 1));
+    
+    let ctx = gsap.context(() => {
+      stRef.current = ScrollTrigger.create({
+        trigger: stageRef.current,
+        start: "top top",
+        end: "+=3000",
+        pin: true,
+        snap: {
+          snapTo: snapValues,
+          duration: { min: 0.2, max: 0.5 },
         },
-        0,
-      )
-      .to(".text-wrapper", { duration: 0.2, y: -10, opacity: 0 }, 0)
-      .to({}, { onStart: () => setCurrentFlavorIndex(nextIndex) }, 0.5)
-      .to(".text-wrapper", { duration: 0.2, y: 0, opacity: 1 }, 0.7);
-  }
+        onUpdate: (self) => {
+          const progress = self.progress;
+          const closestIndex = Math.round(progress * (flavors.length - 1));
+          
+          if (closestIndex !== currentFlavorRef.current) {
+            goToFlavor(closestIndex);
+          }
+        }
+      });
+    }, stageRef);
+    return () => {
+      stRef.current = null;
+      ctx.revert();
+    };
+  }, []);
 
-  return (
-    <section
-      data-slice-type={slice.slice_type}
-      data-slice-variation={slice.variation}
-      className="carousel relative grid h-screen grid-rows-[auto,4fr,auto] justify-center overflow-hidden bg-white py-12 text-white"
-    >
-      <div className="background pointer-events-none absolute inset-0 bg-[#710523] opacity-50" />
+  const isTransitioning = useRef(false);
+  const touchStartY = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const lastScrollTime = useRef<number>(0);
 
-      <WavyCircles className="absolute left-1/2 top-1/2 h-[120vmin] -translate-x-1/2 -translate-y-1/2 text-[#710523]" />
+  const totalItems = basket.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = basket.reduce((sum, item) => sum + 74.5 * item.quantity, 0);
 
-      <h2 className="relative text-center text-5xl font-bold">
-        CHOOSE YOUR FLAVOR
-      </h2>
+  // Load and save basket
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(BASKET_KEY);
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+        if (Array.isArray(parsed)) setBasket(parsed as BasketLine[]);
+      }
+    } catch {
+      window.localStorage.removeItem(BASKET_KEY);
+    }
+  }, []);
 
-      <div className="grid grid-cols-[auto,auto,auto] items-center">
-        {/* Left */}
-        <ArrowButton
-          onClick={() => changeFlavor(currentFlavorIndex + 1)}
-          direction="left"
-          label="Previous Flavor"
-        />
-        {/* Can */}
-        <View className="aspect-square h-[70vmin] min-h-40">
-          <Center position={[0, 0, 1.5]}>
-            <FloatingCan
-              ref={sodaCanRef}
-              floatIntensity={0.3}
-              rotationIntensity={1}
-              flavor={FLAVORS[currentFlavorIndex].flavor}
-              scale={2.3}
-            />
-          </Center>
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(BASKET_KEY, JSON.stringify(basket));
+    } catch {
+      // Storage unavailable fallback
+    }
+  }, [basket]);
 
-          <Environment
-            files="/hdr/lobby.hdr"
-            environmentIntensity={0.6}
-            environmentRotation={[0, 3, 0]}
-          />
-          <directionalLight intensity={6} position={[0, 1, 1]} />
-        </View>
-        {/* Right */}
-        <ArrowButton
-          onClick={() => changeFlavor(currentFlavorIndex - 1)}
-          direction="right"
-          label="Next Flavor"
-        />
-      </div>
+  // Initial setup for fruit positions
+  useEffect(() => {
 
-      <div className="text-area relative mx-auto text-center">
-        <div className="text-wrapper text-4xl font-medium">
-          <p>{FLAVORS[currentFlavorIndex].name}</p>
-        </div>
-        <div className="mt-2 text-2xl font-normal opacity-90">
-          <p>Try them all for just $12</p>
-        </div>
-      </div>
-    </section>
+    fruitRefs.current.forEach((fruitEl, index) => {
+      if (!fruitEl) return;
+      if (index === 0) {
+        gsap.set(fruitEl, {
+          xPercent: 0,
+          yPercent: -50,
+          autoAlpha: 1,
+          scale: 1,
+        });
+      } else {
+        gsap.set(fruitEl, {
+          xPercent: 40,
+          yPercent: -50,
+          autoAlpha: 0,
+          scale: 0.92,
+        });
+      }
+    });
+  }, []);
+
+  // Transition to target flavor with authentic Kombu can rolling & sliding
+  const goToFlavor = useCallback(
+    (targetIndex: number) => {
+      if (
+        targetIndex === currentFlavorRef.current ||
+        targetIndex < 0 ||
+        targetIndex >= flavors.length
+      ) {
+        return;
+      }
+
+      const direction = targetIndex > currentFlavorRef.current ? 1 : -1;
+      
+      currentFlavorRef.current = targetIndex;
+      setActiveFlavor(targetIndex);
+
+      const currentFruit = fruitRefs.current[currentFlavorRef.current];
+      const nextFruit = fruitRefs.current[targetIndex];
+
+      if (titleRef.current && descRef.current && countRef.current) {
+        gsap.killTweensOf([countRef.current, titleRef.current, descRef.current]);
+      }
+
+      const tl = gsap.timeline();
+
+      // Bring the matching fruit in from the same side as the incoming can.
+      if (currentFruit && nextFruit) {
+        gsap.killTweensOf([currentFruit, nextFruit]);
+        tl.to(
+          currentFruit,
+          {
+            xPercent: -150 * direction,
+            autoAlpha: 0,
+            scale: 0.82,
+            rotation: -90 * direction,
+            duration: 0.72,
+            ease: "power2.in",
+          },
+          0
+        ).fromTo(
+          nextFruit,
+          {
+            xPercent: 150 * direction,
+            yPercent: -50,
+            autoAlpha: 0,
+            scale: 0.82,
+            rotation: 90 * direction,
+          },
+          {
+            xPercent: 0,
+            yPercent: -50,
+            autoAlpha: 1,
+            scale: 1,
+            rotation: 0,
+            duration: 1.05,
+            ease: "power2.out",
+          },
+          0.08
+        );
+      }
+
+      // 1. Text Copy exit to a clean directional slide, not a fade-out.
+      if (titleRef.current && descRef.current && countRef.current) {
+        tl.to(
+          [countRef.current, titleRef.current, descRef.current],
+          {
+            x: -40 * direction,
+            autoAlpha: 0,
+            duration: 0.26,
+            stagger: 0.04,
+            ease: "power2.in",
+          },
+          0
+        );
+      }
+
+      // 2. No decorative fruit layer — the flavor artwork is now limited to the can itself.
+      // The fruit viewport is intentionally removed to match the cleaner reference.
+
+      // 3. Text Copy entrance with a direct, crisp slide in.
+      if (titleRef.current && descRef.current && countRef.current) {
+        tl.fromTo(
+          [countRef.current, titleRef.current, descRef.current],
+          { x: 46 * direction, autoAlpha: 0 },
+          {
+            x: 0,
+            autoAlpha: 1,
+            duration: 0.52,
+            stagger: 0.05,
+            ease: "power2.out",
+          },
+          0.18
+        );
+      }
+    },
+    []
   );
-};
 
-export default Carousel;
+  
+  
+  
+  // Toast auto-clear
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(""), 2200);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
-type ArrowButtonProps = {
-  direction?: "right" | "left";
-  label: string;
-  onClick: () => void;
-};
+  const addToBasket = (id: string) => {
+    setBasket((items) => {
+      const existing = items.find((item) => item.id === id);
+      return existing
+        ? items.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item))
+        : [...items, { id, quantity: 1 }];
+    });
+    setToast("Added to your basket");
+  };
 
-function ArrowButton({
-  label,
-  onClick,
-  direction = "right",
-}: ArrowButtonProps) {
+  const navigateTo = (index: number) => {
+    if (stRef.current) {
+      const st = stRef.current;
+      const targetProgress = index / (flavors.length - 1);
+      const targetScroll = st.start + (st.end - st.start) * targetProgress;
+      gsap.to(window, { scrollTo: targetScroll, duration: 1, ease: "power2.inOut" });
+    } else {
+      goToFlavor(index);
+    }
+  };
+
+  const adjustQuantity = (id: string, amount: number) => {
+    setBasket((items) =>
+      items
+        .map((item) => (item.id === id ? { ...item, quantity: item.quantity + amount } : item))
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  const jumpToStory = () => {
+    setPanel(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const currentFlavor: Flavor = (flavors[activeFlavor] ?? flavors[0]) as Flavor;
+
   return (
-    <button
-      onClick={onClick}
-      className="size-12 rounded-full border-2 border-white bg-white/10 p-3 opacity-85 ring-white focus:outline-none focus-visible:opacity-100 focus-visible:ring-4 md:size-16 lg:size-20"
-    >
-      <ArrowIcon className={clsx(direction === "right" && "-scale-x-100")} />
-      <span className="sr-only">{label}</span>
-    </button>
+    <main className="story-container">
+      {/* Hero interactive slider section */}
+      <section
+        className="story-stage"
+        ref={stageRef}
+        
+        aria-label="Explore Fizzi flavors"
+      >
+        {/* Fluid animated diagonal ribbon with liquid wave distortion */}
+        <FluidRibbon activeFlavor={activeFlavor} flavors={flavors} />
+
+        {/* Global Navigation Header */}
+        <header className="stage-header">
+          <button
+            className="menu-trigger"
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setPanel("menu")}
+          >
+            <span className="menu-lines" aria-hidden="true">
+              <i />
+              <i />
+            </span>
+          </button>
+
+          <a
+            className="wordmark"
+            href="#top"
+            onClick={(event) => {
+              event.preventDefault();
+              jumpToStory();
+            }}
+            aria-label="Fizzi home"
+          >
+            fizzi<span>✦</span>
+          </a>
+
+          <div className="header-actions">
+            <button
+              className="login-trigger"
+              type="button"
+              aria-label="Log in"
+            >
+              <span>Log in</span>
+            </button>
+            <button
+              className="basket-trigger"
+              type="button"
+              onClick={() => setPanel("basket")}
+              aria-label={`Open basket, ${totalItems} items`}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+                <path
+                  d="M7 4H3v2h2l3.6 7.6-1.3 2.4A2 2 0 0 0 9 19h11v-2H9l1.1-2h7.4a2 2 0 0 0 1.8-1.1L23 7H7.4L7 4Zm2 17a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm10 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
+                  transform="translate(-1 -1) scale(.92)"
+                />
+              </svg>
+              <span>my basket ({totalItems})</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Active Flavor Copy Container (Left) */}
+        <div className="flavor-copy-container" ref={copyRef}>
+          <div className="flavor-count" ref={countRef}>
+            <span
+              className="flavor-count-active"
+              style={{ color: currentFlavor.color }}
+            >
+              0{activeFlavor + 1}
+            </span>
+            <span>／</span>
+            <span>04</span>
+          </div>
+
+          <div className="flavor-title-wrap">
+            <h1 className="flavor-title" ref={titleRef}>
+              FRESH. FRUITY. FIZZY.
+            </h1>
+          </div>
+
+          <p className="flavor-description" ref={descRef}>
+            GOOD VIBES IN EVERY SIP.
+          </p>
+
+          <p className="flavor-price">
+            {currentFlavor.price} <span>({currentFlavor.pack})</span>
+          </p>
+
+          <div className="flavor-actions">
+            <button
+              className="story-button"
+              type="button"
+              style={{
+                backgroundColor: currentFlavor.color,
+                borderColor: currentFlavor.color,
+                color: currentFlavor.textColor,
+              }}
+              onClick={() => addToBasket(currentFlavor.id)}
+            >
+              add to cart
+            </button>
+            <button
+              className="story-button secondary"
+              type="button"
+              style={{
+                borderColor: currentFlavor.color,
+              }}
+              onClick={() => setPanel("details")}
+            >
+              discover
+            </button>
+          </div>
+
+          <a
+            className="mix-link"
+            href="#mixes"
+            onClick={(event) => {
+              event.preventDefault();
+              setToast("Your mixed case is ready to explore");
+            }}
+          >
+            Add a mixed case to your cart
+          </a>
+        </div>
+
+        {/* Photorealistic 3D Cans Viewport: Exactly in the middle with 3D cylinder roll physics */}
+        <CanScene3D
+          activeFlavor={activeFlavor}
+          canImages={flavors.map((f) => f.image)}
+          flavorColors={flavors.map((f) => f.color)}
+        />
+
+        <div className="flavor-fruit-stage" aria-hidden="true">
+          {flavors.map((flavor, index) => (
+            <div
+              className="flavor-fruit"
+              key={flavor.id}
+              ref={(element) => {
+                fruitRefs.current[index] = element;
+              }}
+            >
+              <img src={flavor.fruit} alt="" />
+            </div>
+          ))}
+        </div>
+
+        {/* Decorative fruit layer removed to keep the stage clean and product-focused. */}
+
+        {/* Side Scroll Indicator */}
+        <div className="story-scroll-note" aria-hidden="true">
+          Scroll
+        </div>
+
+        {/* Interactive Flavor Controls (Arrows & Pagination Dots) */}
+        <nav className="story-controls" aria-label="Choose a flavor">
+          <button
+            className="story-arrow"
+            type="button"
+            aria-label="Previous flavor"
+            disabled={activeFlavor === 0}
+            onClick={() => navigateTo(activeFlavor - 1)}
+          >
+            ‹
+          </button>
+
+          {flavors.map((flavor, index) => (
+            <button
+              key={flavor.id}
+              type="button"
+              className={activeFlavor === index ? "is-active" : ""}
+              style={
+                activeFlavor === index
+                  ? { backgroundColor: flavor.color, outlineColor: flavor.color }
+                  : undefined
+              }
+              aria-label={`Show ${flavor.title.join(" ")}`}
+              aria-current={activeFlavor === index ? "step" : undefined}
+              onClick={() => navigateTo(index)}
+            />
+          ))}
+
+          <button
+            className="story-arrow"
+            type="button"
+            aria-label="Next flavor"
+            disabled={activeFlavor === flavors.length - 1}
+            onClick={() => navigateTo(activeFlavor + 1)}
+          >
+            ›
+          </button>
+        </nav>
+
+        {/* Language switch */}
+        <div className="language-switch" aria-label="Language">
+          <button type="button" className="is-active">
+            in
+          </button>
+          <span>|</span>
+          <button type="button">fr</button>
+        </div>
+      </section>
+
+
+
+      {/* Drawers and Panels */}
+      {panel && (
+        <div
+          className="overlay-backdrop"
+          onClick={() => setPanel(null)}
+          aria-hidden="true"
+        />
+      )}
+
+      {panel === "menu" && (
+        <aside
+          className="side-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="menu-title"
+        >
+          <div className="panel-top">
+            <h2 id="menu-title">Explore Fizzi</h2>
+            <button
+              className="icon-close"
+              type="button"
+              onClick={() => setPanel(null)}
+              aria-label="Close menu"
+            >
+              ×
+            </button>
+          </div>
+          <nav className="menu-list">
+            {["The flavors", "Our story", "The good stuff", "Get in touch"].map(
+              (item, index) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => {
+                    if (index === 0) {
+                      jumpToStory();
+                    } else if (index === 1) {
+                      setPanel("story");
+                    } else {
+                      setPanel(null);
+                      setToast(`${item} is coming soon`);
+                    }
+                  }}
+                >
+                  <span>{item}</span>
+                  <small>0{index + 1}</small>
+                </button>
+              )
+            )}
+          </nav>
+        </aside>
+      )}
+
+      {panel === "basket" && (
+        <aside
+          className="side-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="basket-title"
+        >
+          <div className="panel-top">
+            <h2 id="basket-title">My basket ({totalItems})</h2>
+            <button
+              className="icon-close"
+              type="button"
+              onClick={() => setPanel(null)}
+              aria-label="Close basket"
+            >
+              ×
+            </button>
+          </div>
+          {basket.length === 0 ? (
+            <p className="empty-basket">Your basket is taking a little breather.</p>
+          ) : (
+            basket.map((item) => {
+              const flavor = flavors.find((entry) => entry.id === item.id);
+              if (!flavor) return null;
+              return (
+                <div className="basket-item" key={item.id}>
+                  <img src={flavor.image} alt="" width={768} height={1200} />
+                  <div>
+                    <h3>{flavor.title.join(" ")}</h3>
+                    <p>$74.50 · 24 cans</p>
+                    <div className="quantity-control">
+                      <button
+                        type="button"
+                        onClick={() => adjustQuantity(item.id, -1)}
+                        aria-label={`Remove one ${flavor.title.join(" ")}`}
+                      >
+                        −
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => adjustQuantity(item.id, 1)}
+                        aria-label={`Add one ${flavor.title.join(" ")}`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+          {basket.length > 0 && (
+            <>
+              <div className="basket-summary">
+                <span>Subtotal</span>
+                <span>${totalPrice.toFixed(2)}</span>
+              </div>
+              <button
+                className="story-button"
+                type="button"
+                style={{
+                  backgroundColor: currentFlavor.color,
+                  borderColor: currentFlavor.color,
+                  color: currentFlavor.textColor,
+                  width: "100%",
+                }}
+                onClick={() => {
+                  setPanel(null);
+                  setToast("Checkout is ready for your next step");
+                }}
+              >
+                Continue to checkout
+              </button>
+            </>
+          )}
+        </aside>
+      )}
+
+      {panel === "details" && (
+        <aside
+          className="side-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="details-title"
+        >
+          <div className="panel-top">
+            <h2 id="details-title">{currentFlavor.title.join(" ")}</h2>
+            <button
+              className="icon-close"
+              type="button"
+              onClick={() => setPanel(null)}
+              aria-label="Close details"
+            >
+              ×
+            </button>
+          </div>
+          <div className="details-copy">
+            <p>{currentFlavor.description}</p>
+            <h3>Bright things inside</h3>
+            <p>Fermented tea · real fruit and botanicals · lightly sparkling · 355 ml per can</p>
+            <h3>Find your new favorite</h3>
+            <p>Enjoy chilled, straight from the can or poured over ice.</p>
+            <button
+              className="story-button"
+              type="button"
+              style={{
+                backgroundColor: currentFlavor.color,
+                borderColor: currentFlavor.color,
+                color: currentFlavor.textColor,
+                marginTop: 20,
+              }}
+              onClick={() => {
+                addToBasket(currentFlavor.id);
+                setPanel(null);
+              }}
+            >
+              Add a case · $74.50
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {panel === "story" && (
+        <aside
+          className="side-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="story-title"
+        >
+          <div className="panel-top">
+            <h2 id="story-title">Our Story</h2>
+            <button
+              className="icon-close"
+              type="button"
+              onClick={() => setPanel(null)}
+              aria-label="Close story"
+            >
+              ×
+            </button>
+          </div>
+          <div className="details-copy">
+            <h3>Good tea. Better moments.</h3>
+            <p>
+              Fruit-forward, full of good things, and made to find its way into your everyday. Pick a
+              flavor and make a little room for brighter days.
+            </p>
+            <p>
+              Brewed in four distinct botanical flavors; an invigorating alternative to sparkling,
+              energy, or conventional canned beverages.
+            </p>
+            <button
+              className="story-button"
+              type="button"
+              style={{
+                backgroundColor: currentFlavor.color,
+                borderColor: currentFlavor.color,
+                color: currentFlavor.textColor,
+                marginTop: 24,
+              }}
+              onClick={() => setPanel(null)}
+            >
+              Back to flavors
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {toast && (
+        <div className="toast-note" role="status">
+          {toast}
+        </div>
+      )}
+    </main>
   );
 }
