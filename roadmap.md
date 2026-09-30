@@ -1,0 +1,4 @@
+- [ ] Build the flavor-story homepage with responsive editorial styling.
+- [ ] Add reversible, scroll-driven flavor transitions and accessible controls.
+- [ ] Add working menu, product details, and persistent basket interactions.
+- [ ] Verify page rendering, interactions, metadata, and preview health.
