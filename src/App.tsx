@@ -153,12 +153,12 @@ function Workspace() {
   const section = navigation.find((s) =>
     s.items.some((i) => i[0] === page),
   )?.section;
-  const unread = data.events.filter(
-    (e) => !data.readNotifications.includes(e.id),
+  const unread = (data.events ?? []).filter(
+    (e) => !(data.readNotifications ?? []).includes(e.id),
   ).length;
   const searchResults = query.trim()
     ? [
-        ...data.customers
+        ...(data.customers ?? [])
           .filter((c) =>
             `${c.customerName} ${c.email} ${c.company}`
               .toLowerCase()
@@ -170,7 +170,7 @@ function Workspace() {
             kind: "Customer",
             action: () => setCustomer(c.userId),
           })),
-        ...data.products
+        ...(data.products ?? [])
           .filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
           .map((p) => ({
             id: p.id,
@@ -178,7 +178,7 @@ function Workspace() {
             kind: "Product",
             action: () => navigate("products"),
           })),
-        ...data.orders
+        ...(data.orders ?? [])
           .filter((o) => o.id.toLowerCase().includes(query.toLowerCase()))
           .map((o) => ({
             id: o.id,
@@ -186,17 +186,16 @@ function Workspace() {
             kind: "Order",
             action: () => navigate("orders"),
           })),
-        ...data.leads
+        ...(data.leads ?? [])
           .filter((l) =>
-            data.customers
+            (data.customers ?? [])
               .find((c) => c.userId === l.customerId)
               ?.customerName.toLowerCase()
               .includes(query.toLowerCase()),
           )
           .map((l) => ({
             id: l.id,
-            name: data.customers.find((c) => c.userId === l.customerId)!
-              .customerName,
+            name: (data.customers ?? []).find((c) => c.userId === l.customerId)?.customerName ?? l.customerId,
             kind: "Lead",
             action: () => navigate("leads"),
           })),
@@ -324,7 +323,7 @@ function Workspace() {
                   {id === "leads" && (
                     <b className="nav-count">
                       {
-                        data.leads.filter((l) => !l.stage.startsWith("Closed"))
+                        (data.leads ?? []).filter((l) => !l.stage.startsWith("Closed"))
                           .length
                       }
                     </b>

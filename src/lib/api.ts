@@ -18,10 +18,48 @@ import type {
   Salesperson,
 } from "../data/models";
 
-const BASE_URL = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) || "http://localhost:5000/api";
+const BASE_URL =
+  (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_URL) ||
+  "http://localhost:5000/api";
+
+// ────────────────────────────────────────────────────────────
+// Auth helpers
+// ────────────────────────────────────────────────────────────
+
+const TOKEN_KEY = "fizzi-admin-token";
+
+function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+function setToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+/** Auto-login with the seeded admin credentials. */
+async function ensureAdminToken(): Promise<void> {
+  if (getToken()) return;
+
+  const res = await fetch(`${BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: "admin@fizzi.in",
+      password: "Fizzi@Admin2026",
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Admin login failed. Is the backend running?");
+  }
+
+  const { token } = await res.json();
+  setToken(token);
+}
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = localStorage.getItem("fizzi-token");
+  const token = getToken();
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
@@ -29,10 +67,18 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     },
     ...options,
   });
+
+  // Token expired — clear it and let the next load retry login
+  if (res.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    throw new Error("Authentication required. Your browser's saved data may be unavailable.");
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `Request failed: ${res.status}`);
   }
+
   return res.json();
 }
 
@@ -344,6 +390,9 @@ function daysSince(date: Date): number {
 // ────────────────────────────────────────────────────────────
 
 export async function loadAppData(): Promise<AppData> {
+  // Ensure we have a valid admin token before making any API calls
+  await ensureAdminToken();
+
   // All requests in parallel for performance
   const [
     productsRes,

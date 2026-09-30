@@ -1,4 +1,4 @@
-import {
+﻿import {
   ArrowRight,
   ArrowUpRight,
   AudioLines,
@@ -38,11 +38,13 @@ export function Dashboard({
   const previousTotal = revenueSeries
     .slice(-days)
     .reduce((sum, row) => sum + row.previous, 0);
-  const revenueChange = ((total / previousTotal - 1) * 100).toFixed(1);
-  const active = data.leads.filter((l) => !l.stage.startsWith("Closed"));
-  const high = data.customers.filter((c) => c.leadScore > 60);
-  const pipeline = active.reduce((s, l) => s + l.value, 0);
-  const priority = [...data.customers]
+  const revenueChange = previousTotal > 0
+    ? ((total / previousTotal - 1) * 100).toFixed(1)
+    : "0.0";
+  const active = (data.leads ?? []).filter((l) => !l.stage.startsWith("Closed"));
+  const high = (data.customers ?? []).filter((c) => c.leadScore > 60);
+  const pipeline = active.reduce((s, l) => s + (l.value ?? 0), 0);
+  const priority = [...(data.customers ?? [])]
     .filter((c) => !c.leadStage.startsWith("Closed"))
     .sort((a, b) => b.leadScore - a.leadScore)
     .slice(0, 5);
@@ -50,7 +52,7 @@ export function Dashboard({
     <>
       <PageHeader
         title="A fresh look at your business."
-        description="Good morning, Alex. Here’s what’s happening across Fizzi today."
+        description="Good morning, Alex. Here's what's happening across Fizzi today."
       >
         <label className="date-select">
           <CalendarDays size={15} />
@@ -59,8 +61,8 @@ export function Dashboard({
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
           >
-            <option value={30}>Sep 1 – Sep 30, 2026</option>
-            <option value={7}>Sep 24 – Sep 30, 2026</option>
+            <option value={30}>Sep 1 â€“ Sep 30, 2026</option>
+            <option value={7}>Sep 24 â€“ Sep 30, 2026</option>
           </select>
           <ChevronDown size={14} />
         </label>
@@ -85,7 +87,7 @@ export function Dashboard({
           label="Total revenue"
           value={shortMoney(total)}
           featured
-          change={`↗ ${revenueChange}%`}
+          change={`â†— ${revenueChange}%`}
         >
           <small>vs. previous period</small>
           <Sparkline />
@@ -104,7 +106,7 @@ export function Dashboard({
         <Metric
           label="High intent customers"
           value={String(high.length)}
-          change={`${data.customers.length} customers tracked`}
+          change={`${(data.customers ?? []).length} customers tracked`}
         >
           <div className="segment-meter">
             {Array.from({ length: 12 }, (_, i) => (
@@ -115,11 +117,11 @@ export function Dashboard({
         <Metric
           label="Pipeline value"
           value={shortMoney(pipeline)}
-          change={`${active.filter((l) => l.value > 10000).length} wholesale opportunities`}
+          change={`${active.filter((l) => (l.value ?? 0) > 10000).length} wholesale opportunities`}
         >
           <span className="metric-caption">Opportunity, in motion</span>
         </Metric>
-        <Metric label="Conversion rate" value="4.83%" change="↗ 0.64 pp">
+        <Metric label="Conversion rate" value="4.83%" change="â†— 0.64 pp">
           <small>vs. previous period</small>
           <Sparkline />
         </Metric>
@@ -152,7 +154,7 @@ export function Dashboard({
                     .toLocaleString("en-IN")}
             </strong>
             <Badge tone="sea">
-              ↗ {chart === "Revenue" ? `${revenueChange}%` : `${days} days`}
+              â†— {chart === "Revenue" ? `${revenueChange}%` : `${days} days`}
             </Badge>
             <div className="chart-legend">
               <span>
@@ -193,8 +195,9 @@ export function Dashboard({
             The signals worth paying attention to.
           </p>
           <div className="live-events">
-            {data.events.slice(0, 4).map((e, i) => {
-              const c = data.customers.find((c) => c.userId === e.customerId)!;
+            {(data.events ?? []).slice(0, 4).map((e, i) => {
+              const c = (data.customers ?? []).find((c) => c.userId === e.customerId);
+              if (!c) return null;
               const Icon =
                 e.type === "Quote request"
                   ? ShoppingBag
@@ -213,10 +216,10 @@ export function Dashboard({
                     <Icon size={16} />
                   </span>
                   <span className="event-copy">
-                    <b>{c.company || c.customerName.split(" ")[0]}</b>
+                    <b>{c.company || (c.customerName || "").split(" ")[0]}</b>
                     <span>{e.description}</span>
                     <small>
-                      {time(e.timestamp)} <span>·</span> {e.type}
+                      {e.timestamp ? time(e.timestamp) : ""} <span>Â·</span> {e.type}
                     </small>
                   </span>
                   <ArrowUpRight size={13} />
@@ -268,7 +271,7 @@ export function Dashboard({
                         <small>
                           {c.company
                             ? c.customerName
-                            : "Returning customer · D2C"}
+                            : "Returning customer Â· D2C"}
                         </small>
                       </span>
                     </button>
@@ -280,7 +283,7 @@ export function Dashboard({
                     </div>
                   </td>
                   <td>
-                    {data.products.find((p) => p.id === c.currentProduct)?.name}
+                    {(data.products ?? []).find((p) => p.id === c.currentProduct)?.name ?? "â€”"}
                   </td>
                   <td className="muted">{c.lastActive}</td>
                   <td>
@@ -327,7 +330,7 @@ export function Dashboard({
               },
               {
                 label: "AI understanding",
-                value: "126",
+                value: String((data.conversations ?? []).length),
                 sub: "conversations",
                 icon: Sparkles,
               },
@@ -345,7 +348,7 @@ export function Dashboard({
               },
               {
                 label: "Conversion",
-                value: "28",
+                value: String((data.orders ?? []).filter(o => o.payment === "Paid").length),
                 sub: "assisted orders",
                 icon: ShoppingBag,
               },
@@ -362,13 +365,12 @@ export function Dashboard({
             ))}
           </div>
           <div className="fine-print flow-note">
-            Monthly demo funnel · agent actions lead into the CRM pipeline
-            before conversion.
+            Live data from MongoDB Â· agent actions feed into the CRM pipeline.
           </div>
         </Panel>
         <div className="product-spotlight">
           <div>
-            <span className="eyebrow">THIS MONTH’S FAVORITE</span>
+            <span className="eyebrow">THIS MONTH'S FAVORITE</span>
             <h2>
               A little citrus.
               <br />A lot of love.

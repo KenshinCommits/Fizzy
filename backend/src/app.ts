@@ -17,11 +17,23 @@ import orderRoutes from './routes/orderRoutes.js';
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors({
-  origin: config.cors.origin,
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman) and any localhost origin
+    if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+      return callback(null, true);
+    }
+    // Also allow explicitly configured origin
+    if (origin === config.cors.origin) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+// Handle preflight
+app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
