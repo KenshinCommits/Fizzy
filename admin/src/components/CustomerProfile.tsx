@@ -21,9 +21,18 @@ export function Transcript({
   onClose: () => void;
 }) {
   const { data } = useStore();
-  const customer = data.customers.find(
+  const customer = (data.customers ?? []).find(
     (c) => c.userId === conversation.customerId,
-  )!;
+  );
+  if (!customer) {
+    return (
+      <Modal title="Conversation transcript" onClose={onClose} wide>
+        <div style={{ padding: "2rem", textAlign: "center", color: "var(--muted)" }}>
+          Loading…
+        </div>
+      </Modal>
+    );
+  };
   return (
     <Modal title="Conversation transcript" onClose={onClose} wide>
       <div className="transcript-layout">
@@ -118,17 +127,29 @@ export function CustomerProfile({
   agent?: boolean;
 }) {
   const { data, update, toast, addEvent } = useStore();
-  const c = data.customers.find((x) => x.userId === id)!;
+  const c = (data.customers ?? []).find((x) => x.userId === id);
   const [tab, setTab] = useState(agent ? "Intelligence" : "Overview");
   const [note, setNote] = useState("");
   const [showNote, setShowNote] = useState(false);
   const [conv, setConv] = useState<Conversation | null>(null);
   const [confirm, setConfirm] = useState(false);
   const [assignee, setAssignee] = useState(false);
-  const conversations = data.conversations.filter((x) => x.customerId === id);
-  const orders = data.orders.filter((x) => x.customerId === id);
-  const changes = data.scoreHistory.filter((x) => x.customerId === id);
-  const events = data.events.filter((x) => x.customerId === id);
+
+  // Guard: customer not loaded yet — close the modal
+  if (!c) {
+    return (
+      <Modal title="Customer profile" onClose={onClose} wide>
+        <div style={{ padding: "2rem", textAlign: "center", color: "var(--muted)" }}>
+          Loading customer data…
+        </div>
+      </Modal>
+    );
+  }
+
+  const conversations = (data.conversations ?? []).filter((x) => x.customerId === id);
+  const orders = (data.orders ?? []).filter((x) => x.customerId === id);
+  const changes = (data.scoreHistory ?? []).filter((x) => x.customerId === id);
+  const events = (data.events ?? []).filter((x) => x.customerId === id);
   return (
     <>
       <Modal

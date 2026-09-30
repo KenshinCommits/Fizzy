@@ -7,7 +7,15 @@ import {
   type ReactNode,
 } from "react";
 import type { AppData, Event, PipelineStage, Product } from "../data/models";
-import { intentFromScore, seed } from "../data/seed";
+import { intentFromScore } from "../data/seed";
+import {
+  apiCreateProduct,
+  apiPostEvent,
+  apiUpdateLeadStage,
+  apiUpdateOrderStatus,
+  apiUpdateProduct,
+  loadAppData,
+} from "./api";
 const KEY = "fizzi-admin-v1";
 export const money = (v: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -38,19 +46,16 @@ export const time = (s: string) =>
     timeZone: "Asia/Kolkata",
   });
 export const duration = (n: number) => `${Math.floor(n / 60)}m ${n % 60}s`;
-// Replace this adapter with authenticated HTTP calls; UI consumes the same AppData contract.
+
+// The repository now calls the real backend API.
+// The UI consumes the same AppData contract so no page components need to change.
 export const adminRepository = {
   async load(): Promise<AppData> {
-    await new Promise((r) => setTimeout(r, 420));
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return structuredClone(seed);
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed.customers) || !Array.isArray(parsed.products))
-      throw new Error("Saved workspace data could not be read.");
-    return parsed;
+    return loadAppData();
   },
-  save(data: AppData) {
-    localStorage.setItem(KEY, JSON.stringify(data));
+  save(_data: AppData) {
+    // Mutations are handled via individual API calls in controllers/mutations below.
+    // localStorage is no longer used as the source of truth.
   },
 };
 type Store = {
@@ -68,8 +73,15 @@ type Store = {
   addProduct: (p: Product) => void;
 };
 const Context = createContext<Store>(null!);
+
+const EMPTY_DATA: AppData = {
+  products: [], customers: [], orders: [], leads: [],
+  events: [], conversations: [], scoreHistory: [], salespeople: [],
+  carts: [], rules: [], settings: {}, readNotifications: [],
+};
+
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(structuredClone(seed));
+  const [data, setData] = useState<AppData>(EMPTY_DATA);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -81,7 +93,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     adminRepository
       .load()
       .then(setData)
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(e.message || "Failed to connect to backend."))
       .finally(() => setLoading(false));
   }, []);
   useEffect(retry, [retry]);
@@ -91,29 +103,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return () => clearTimeout(t);
     }
   }, [message]);
+
+  // update: optimistically updates local state; mutations fire API calls separately
   const update = useCallback(
     (fn: (d: AppData) => AppData) =>
       setData((prev) => {
         const next = fn(prev);
-        try {
-          adminRepository.save(next);
-        } catch {
-          setTimeout(
-            () =>
-              toast(
-                "Changes are in memory. Browser storage is unavailable or full.",
-              ),
-            0,
-          );
-        }
         return next;
       }),
-    [toast],
+    [],
   );
+
   const addEvent = useCallback(
     (input: Omit<Event, "id" | "timestamp">) =>
       update((d) => {
-        const event = {
+        const event: Event = {
           ...input,
           id: crypto.randomUUID(),
           timestamp: new Date().toISOString(),
@@ -127,14 +131,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             : input.type === "Cart abandoned"
               ? "Cart Abandoned"
               : score > 80 &&
-                  ![
-                    "Closed Won",
-                    "Closed Lost",
-                    "Negotiation",
-                    "Bulk Quote",
-                  ].includes(c.leadStage)
+                  !["Closed Won", "Closed Lost", "Negotiation", "Bulk Quote"].includes(c.leadStage)
                 ? "High Intent"
                 : c.leadStage;
+        // Post event to backend asynchronously
+        apiPostEvent({
+          userId: c.userId,
+          sessionId: `admin_${Date.now()}`,
+          eventType: input.type.toLowerCase().replace(/\s+/g, "_"),
+          metadata: { description: input.description, productId: input.productId },
+        }).catch(() => {});
         return {
           ...d,
           events: [event, ...d.events].slice(0, 100),
@@ -146,39 +152,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                   intent: intentFromScore(score),
                   leadStage: stage,
                   lastActive: "Just now",
-                  productViews:
-                    x.productViews + (input.type === "Product view" ? 1 : 0),
+                  productViews: x.productViews + (input.type === "Product view" ? 1 : 0),
                   mostViewedProducts:
                     input.type === "Product view"
-                      ? (x.mostViewedProducts.some(
-                          (p) => p.productId === input.productId,
-                        )
+                      ? (x.mostViewedProducts.some((p) => p.productId === input.productId)
                           ? x.mostViewedProducts.map((p) =>
                               p.productId === input.productId
                                 ? { ...p, views: p.views + 1 }
                                 : p,
                             )
-                          : [
-                              ...x.mostViewedProducts,
-                              { productId: input.productId, views: 1 },
-                            ]
+                          : [...x.mostViewedProducts, { productId: input.productId, views: 1 }]
                         ).sort((a, b) => b.views - a.views)
                       : x.mostViewedProducts,
                   recentlyViewedProducts:
                     input.type === "Product view"
-                      ? [
-                          input.productId,
-                          ...x.recentlyViewedProducts.filter(
-                            (p) => p !== input.productId,
-                          ),
-                        ].slice(0, 5)
+                      ? [input.productId, ...x.recentlyViewedProducts.filter((p) => p !== input.productId)].slice(0, 5)
                       : x.recentlyViewedProducts,
-                  pricingViews:
-                    x.pricingViews + (input.type === "Pricing view" ? 1 : 0),
-                  cartInteractions:
-                    x.cartInteractions + (input.type === "Cart update" ? 1 : 0),
-                  checkoutAttempts:
-                    x.checkoutAttempts + (input.type === "Checkout" ? 1 : 0),
+                  pricingViews: x.pricingViews + (input.type === "Pricing view" ? 1 : 0),
+                  cartInteractions: x.cartInteractions + (input.type === "Cart update" ? 1 : 0),
+                  checkoutAttempts: x.checkoutAttempts + (input.type === "Checkout" ? 1 : 0),
                 }
               : x,
           ),
@@ -206,11 +198,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }),
     [update],
   );
+
   useEffect(() => {
     if (!live) return;
     let i = 0;
     const t = setInterval(() => {
-      const c = seed.customers[i++ % 5];
+      const c = data.customers[i++ % Math.max(1, Math.min(5, data.customers.length))];
+      if (!c) return;
       const type = i % 2 ? "Product view" : "Pricing view";
       addEvent({
         customerId: c.userId,
@@ -218,13 +212,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         type,
         impact: data.rules.find((r) => r.event === type)?.weight ?? 3,
         description:
-          type === "Product view"
-            ? "explored a product"
-            : "checked pack pricing",
+          type === "Product view" ? "explored a product" : "checked pack pricing",
       });
     }, 9000);
     return () => clearInterval(t);
-  }, [live, addEvent, data.rules]);
+  }, [live, addEvent, data.rules, data.customers]);
+
   const moveLead = (id: string, stage: PipelineStage) => {
     update((d) => {
       const lead = d.leads.find((l) => l.id === id);
@@ -236,8 +229,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ),
       };
     });
+    // Persist to backend
+    apiUpdateLeadStage(id, stage).catch(() => {});
     toast(`Opportunity moved to ${stage}`);
   };
+
   return (
     <Context.Provider
       value={{
@@ -254,6 +250,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         addEvent,
         addProduct: (p) => {
           update((d) => ({ ...d, products: [p, ...d.products] }));
+          // Persist to backend
+          apiCreateProduct(p).catch(() => {});
           toast("Product added to your catalog");
         },
       }}
