@@ -1,5 +1,5 @@
 {
-  "name": "fizzi-admin",
+  "name": "fizzi-storefront",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -7,20 +7,19 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "playwright test",
     "assets": "node scripts/create-can.mjs"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-router": "^1.120.5",
     "@fontsource-variable/dm-sans": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
-    "lucide-react": "^0.468.0",
+    "gsap": "^3.13.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "recharts": "^3.1.2",
     "three": "^0.180.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.1",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@types/three": "^0.180.0",

@@ -115,9 +115,9 @@ const BASKET_KEY = "fizzy-basket-v1";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Fizzy — Cooler Sips, Bigger Days" },
+      { title: "Fizzi — Cooler Sips, Bigger Days" },
       { name: "description", content: "Craft sparkling soda in four bright flavors: Watermelon Crush, Yuzu Citrus Fizz, Berry Wave, and Mango Splash." },
-      { property: "og:title", content: "Fizzy — Cooler Sips, Bigger Days" },
+      { property: "og:title", content: "Fizzi — Cooler Sips, Bigger Days" },
       { property: "og:description", content: "Craft sparkling soda in four bright flavors: Watermelon Crush, Yuzu Citrus Fizz, Berry Wave, and Mango Splash." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -362,7 +362,7 @@ function HomePage() {
         ref={stageRef}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        aria-label="Explore Kumi flavors"
+        aria-label="Explore Fizzi flavors"
       >
         {/* Fluid animated diagonal ribbon with liquid wave distortion */}
         <FluidRibbon activeFlavor={activeFlavor} flavors={flavors} />
@@ -566,7 +566,7 @@ function HomePage() {
           aria-labelledby="menu-title"
         >
           <div className="panel-top">
-            <h2 id="menu-title">Explore Kumi</h2>
+            <h2 id="menu-title">Explore Fizzi</h2>
             <button
               className="icon-close"
               type="button"

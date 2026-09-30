@@ -158,7 +158,7 @@ export default function CanScene3D({
       });
 
       const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
-      bodyMesh.rotation.y = Math.PI / 2 + 0.75;
+      bodyMesh.rotation.y = Math.PI / 2 + 0.95;
       canGroup.add(bodyMesh);
 
       // Top taper (aluminum bevel inward to rim)

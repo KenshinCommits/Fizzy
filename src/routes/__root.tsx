@@ -4,12 +4,9 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 
-import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -34,7 +31,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -77,45 +74,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Kumi — Bright days, naturally" },
-      { name: "description", content: "Meet Kumi's sparkling fermented tea: bright fruit, botanical flavor, and a little lift in every can." },
-      { name: "author", content: "Kumi" },
-      { property: "og:title", content: "Kumi — Bright days, naturally" },
-      { property: "og:description", content: "Meet Kumi's sparkling fermented tea: bright fruit, botanical flavor, and a little lift in every can." },
+      { title: "Fizzi — Cooler Sips, Bigger Days" },
+      { name: "description", content: "Meet Fizzi's sparkling craft soda in bright, fruit-forward flavors." },
+      { name: "author", content: "Fizzi" },
+      { property: "og:title", content: "Fizzi — Cooler Sips, Bigger Days" },
+      { property: "og:description", content: "Meet Fizzi's sparkling craft soda in bright, fruit-forward flavors." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Nunito+Sans:wght@400;500;600;700;800;900;1000&display=swap" },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-    ],
   }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
