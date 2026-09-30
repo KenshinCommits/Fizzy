@@ -18,6 +18,7 @@ export default function CanScene3D({
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cansRef = useRef<THREE.Group[]>([]);
+  const spinGroupsRef = useRef<THREE.Group[]>([]);
   const shadowsRef = useRef<THREE.Mesh[]>([]);
   const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const animFrameId = useRef<number | null>(null);
@@ -122,10 +123,12 @@ export default function CanScene3D({
     // 5. Build the 4 3D Cans
     const textureLoader = new THREE.TextureLoader();
     cansRef.current = [];
+    spinGroupsRef.current = [];
     shadowsRef.current = [];
 
     canImages.forEach((imgUrl, index) => {
       const canGroup = new THREE.Group();
+      const spinGroup = new THREE.Group();
 
       // Can body texture
       const texture = textureLoader.load(imgUrl);
@@ -159,7 +162,7 @@ export default function CanScene3D({
 
       const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
       bodyMesh.rotation.y = Math.PI / 2 + 0.95;
-      canGroup.add(bodyMesh);
+      spinGroup.add(bodyMesh);
 
       // Top taper (aluminum bevel inward to rim)
       const topTaperGeo = new THREE.CylinderGeometry(
@@ -172,27 +175,27 @@ export default function CanScene3D({
       );
       const topTaper = new THREE.Mesh(topTaperGeo, metalSilverMaterial);
       topTaper.position.y = CAN_HEIGHT / 2 + 0.10;
-      canGroup.add(topTaper);
+      spinGroup.add(topTaper);
 
       // Top silver rim (torus ring)
       const topRimGeo = new THREE.TorusGeometry(CAN_RADIUS * 0.88, 0.032, 16, 64);
       const topRim = new THREE.Mesh(topRimGeo, metalSilverMaterial);
       topRim.rotation.x = Math.PI / 2;
       topRim.position.y = CAN_HEIGHT / 2 + 0.20;
-      canGroup.add(topRim);
+      spinGroup.add(topRim);
 
       // Top aluminum lid disk
       const topLidGeo = new THREE.CircleGeometry(CAN_RADIUS * 0.86, 64);
       const topLid = new THREE.Mesh(topLidGeo, lidTopMaterial);
       topLid.rotation.x = -Math.PI / 2;
       topLid.position.y = CAN_HEIGHT / 2 + 0.19;
-      canGroup.add(topLid);
+      spinGroup.add(topLid);
 
       // Pull tab detail on top lid
       const tabGeo = new THREE.BoxGeometry(0.24, 0.015, 0.42);
       const tabMesh = new THREE.Mesh(tabGeo, metalSilverMaterial);
       tabMesh.position.set(0, CAN_HEIGHT / 2 + 0.205, 0.14);
-      canGroup.add(tabMesh);
+      spinGroup.add(tabMesh);
 
       // Bottom taper (aluminum bevel inward to base)
       const botTaperGeo = new THREE.CylinderGeometry(
@@ -205,14 +208,17 @@ export default function CanScene3D({
       );
       const botTaper = new THREE.Mesh(botTaperGeo, metalSilverMaterial);
       botTaper.position.y = -CAN_HEIGHT / 2 - 0.11;
-      canGroup.add(botTaper);
+      spinGroup.add(botTaper);
 
       // Bottom concave rim
       const botRimGeo = new THREE.TorusGeometry(CAN_RADIUS * 0.86, 0.032, 16, 64);
       const botRim = new THREE.Mesh(botRimGeo, metalSilverMaterial);
       botRim.rotation.x = Math.PI / 2;
       botRim.position.y = -CAN_HEIGHT / 2 - 0.22;
-      canGroup.add(botRim);
+      spinGroup.add(botRim);
+
+      canGroup.add(spinGroup);
+      spinGroupsRef.current.push(spinGroup);
 
       // Position the can group along the horizontal track
       const initialOffset = (index - activeFlavor) * CAN_SPACING;
@@ -352,6 +358,7 @@ export default function CanScene3D({
 
     cansRef.current.forEach((can, index) => {
       const shadow = shadowsRef.current[index];
+      const spinGroup = spinGroupsRef.current[index];
       const targetX = (index - activeFlavor) * CAN_SPACING;
       const direction = activeFlavor > prevActiveRef.current ? 1 : -1;
       // Physics roll: angle delta = - (deltaX / radius) * 1.15
@@ -360,6 +367,12 @@ export default function CanScene3D({
       // Determine roll tilt angle during movement (can leans into roll)
       const isCurrentActive = index === activeFlavor;
       const isPreviousActive = index === prevActiveRef.current;
+      gsap.killTweensOf(can.position);
+      gsap.killTweensOf(can.rotation);
+      if (spinGroup) {
+        gsap.killTweensOf(spinGroup.rotation);
+        if (isCurrentActive) gsap.set(spinGroup.rotation, { y: 0 });
+      }
       const rollLean = isCurrentActive || isPreviousActive
         ? (activeFlavor > prevActiveRef.current ? -0.22 : 0.22)
         : 0;
@@ -379,12 +392,21 @@ export default function CanScene3D({
 
       const dragAdjustment = index === activeFlavor ? dragAngleRef.current.value : 0;
 
-      // Roll rotation around Y-axis (cylinder spinning on floor) and user drag adjusts the active can.
-      gsap.to(can.rotation, {
+      // Finish the can's roll, then continuously turn its can assembly in place.
+      const rotationTimeline = gsap.timeline();
+      rotationTimeline.to(can.rotation, {
         y: targetRoll + dragAdjustment,
         duration: 1.35,
         ease: "power2.inOut",
       });
+      if (isCurrentActive && spinGroup) {
+        rotationTimeline.to(spinGroup.rotation, {
+          y: `+=${Math.PI * 2}`,
+          duration: 3.2,
+          ease: "none",
+          repeat: -1,
+        });
+      }
 
       // Subtle roll lean on Z-axis (settles back to 0)
       gsap.timeline()

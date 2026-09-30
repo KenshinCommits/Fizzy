@@ -278,6 +278,36 @@
   font-weight: 800;
 }
 
+.flavor-fruit-stage {
+  position: absolute;
+  z-index: 8;
+  right: clamp(42px, 5vw, 84px);
+  bottom: clamp(76px, 10vh, 112px);
+  width: clamp(220px, 23vw, 330px);
+  height: clamp(200px, 32vh, 300px);
+  pointer-events: none;
+}
+
+.flavor-fruit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  visibility: hidden;
+}
+
+.flavor-fruit img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  filter: drop-shadow(0 16px 20px rgb(23 53 47 / 18%));
+}
+
 .can-3d-viewport {
   overflow: hidden;
 }
@@ -469,8 +499,15 @@
     top: auto;
     bottom: 95px;
     left: 24px;
-    width: min(390px, calc(100% - 48px));
+    width: min(58vw, 320px);
     transform: none;
+  }
+
+  .flavor-fruit-stage {
+    right: 12px;
+    bottom: 170px;
+    width: clamp(128px, 34vw, 180px);
+    height: clamp(130px, 25vh, 190px);
   }
 
   .flavor-count {
@@ -560,7 +597,7 @@
 
   .flavor-copy-container {
     left: 18px;
-    width: calc(100% - 36px);
+    width: min(58vw, 320px);
   }
 
   .flavor-title {

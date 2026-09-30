@@ -7,9 +7,8 @@ import cherryCan from "@/assets/can-cherry-lime.png";
 import mapleCan from "@/assets/can-maple-ginger.png";
 import raspberryCan from "@/assets/can-raspberry.png";
 
-import strawberryFruit from "@/assets/fruit-strawberry.png";
-import cherryFruit from "@/assets/fruit-cherry-lime.png";
-import mapleFruit from "@/assets/fruit-maple-ginger.png";
+import watermelonFruit from "@/assets/fruit-watermelon.jpg";
+import citrusFruit from "@/assets/fruit-citrus.jpg";
 import raspberryFruit from "@/assets/fruit-raspberry.png";
 
 import slide1 from "@/assets/slide-1.png";
@@ -19,6 +18,8 @@ import slide4 from "@/assets/slide-4.png";
 
 import CanScene3D from "@/components/CanScene3D";
 import FluidRibbon from "@/components/FluidRibbon";
+
+const mangoFruit = "/textures/fruit-mango.png";
 
 type Flavor = {
   id: string;
@@ -44,14 +45,14 @@ const flavors: Flavor[] = [
     title: ["watermelon", "crush"],
     description: "Cooler sips, bigger days. Refreshing sparkling watermelon craft soda made with real fruit juice, clean ingredients, and crisp bubbles.",
     image: "/textures/Watermelon.png",
-    fruit: strawberryFruit,
+    fruit: watermelonFruit,
     bgImage: slide1,
-    color: "#e5c6cc",
+    color: "#e44d4d",
     textColor: "#212121",
     bg: {
-      left: "#d9d5ef",
-      right: "#f4ecc9",
-      accent: "#f0e3b5",
+      left: "#fffdfb",
+      right: "#e7f4e8",
+      accent: "#1b8d55",
     },
     pack: "A case of 24 cans (330ml)",
     price: "$74.50",
@@ -61,14 +62,14 @@ const flavors: Flavor[] = [
     title: ["yuzu citrus", "fizz"],
     description: "Bright citrus, bigger days. Zesty sparkling yuzu juice packed with sun-ripened citrus notes, natural flavours, and low sugar refreshment.",
     image: "/textures/FizzyLemonTexture.png",
-    fruit: cherryFruit,
+    fruit: citrusFruit,
     bgImage: slide2,
-    color: "#d8ddbe",
+    color: "#f3cc36",
     textColor: "#212121",
     bg: {
-      left: "#dfe7d6",
-      right: "#f7f0d0",
-      accent: "#e8dcaf",
+      left: "#fffefa",
+      right: "#fff3a6",
+      accent: "#2789ce",
     },
     pack: "A case of 24 cans (330ml)",
     price: "$74.50",
@@ -80,12 +81,12 @@ const flavors: Flavor[] = [
     image: "/textures/FizzyGrapeTexture.png",
     fruit: raspberryFruit,
     bgImage: slide3,
-    color: "#d7d1ef",
+    color: "#9255ad",
     textColor: "#212121",
     bg: {
-      left: "#d6d1eb",
-      right: "#f3e7c7",
-      accent: "#e8d9a5",
+      left: "#fffdfd",
+      right: "#f0e6f6",
+      accent: "#e5a6ca",
     },
     pack: "A case of 24 cans (330ml)",
     price: "$74.50",
@@ -95,14 +96,14 @@ const flavors: Flavor[] = [
     title: ["mango", "splash"],
     description: "Juicy mango, endless summer. Pure tropical sunshine and real mango juice with sparkling soda bubbles, low calories, and good vibes.",
     image: "/textures/FizzyMangoTexture.png",
-    fruit: mapleFruit,
+    fruit: mangoFruit,
     bgImage: slide4,
-    color: "#e9d7c2",
+    color: "#f47b20",
     textColor: "#212121",
     bg: {
-      left: "#e6d9d3",
-      right: "#f4edd0",
-      accent: "#e2d1a5",
+      left: "#fffdf8",
+      right: "#ffe28a",
+      accent: "#f27b24",
     },
     pack: "A case of 24 cans (330ml)",
     price: "$74.50",
@@ -168,26 +169,17 @@ function HomePage() {
     }
   }, [basket]);
 
-  // Initial setup for fruit positions
+  // Keep the active fruit in place and stage the other flavors offscreen right.
   useEffect(() => {
-
     fruitRefs.current.forEach((fruitEl, index) => {
       if (!fruitEl) return;
-      if (index === 0) {
-        gsap.set(fruitEl, {
-          xPercent: 0,
-          yPercent: -50,
-          autoAlpha: 1,
-          scale: 1,
-        });
-      } else {
-        gsap.set(fruitEl, {
-          xPercent: 40,
-          yPercent: -50,
-          autoAlpha: 0,
-          scale: 0.92,
-        });
-      }
+      gsap.set(fruitEl, {
+        xPercent: index === 0 ? 0 : 150,
+        yPercent: -50,
+        autoAlpha: index === 0 ? 1 : 0,
+        scale: index === 0 ? 1 : 0.82,
+        rotation: index === 0 ? 0 : 90,
+      });
     });
   }, []);
 
@@ -232,8 +224,40 @@ function HomePage() {
         );
       }
 
-      // 2. No decorative fruit layer — the flavor artwork is now limited to the can itself.
-      // The fruit viewport is intentionally removed to match the cleaner reference.
+      // Bring the matching fruit in from the same side as the incoming can.
+      if (currentFruit && nextFruit) {
+        tl.to(
+          currentFruit,
+          {
+            xPercent: -150 * direction,
+            autoAlpha: 0,
+            scale: 0.82,
+            rotation: -90 * direction,
+            duration: 0.72,
+            ease: "power2.in",
+          },
+          0
+        ).fromTo(
+          nextFruit,
+          {
+            xPercent: 150 * direction,
+            yPercent: -50,
+            autoAlpha: 0,
+            scale: 0.82,
+            rotation: 90 * direction,
+          },
+          {
+            xPercent: 0,
+            yPercent: -50,
+            autoAlpha: 1,
+            scale: 1,
+            rotation: 0,
+            duration: 1.05,
+            ease: "power2.out",
+          },
+          0.08
+        );
+      }
 
       // 3. Text Copy entrance with a direct, crisp slide in.
       if (titleRef.current && descRef.current && countRef.current) {
@@ -491,7 +515,19 @@ function HomePage() {
           flavorColors={flavors.map((f) => f.color)}
         />
 
-        {/* Decorative fruit layer removed to keep the stage clean and product-focused. */}
+        <div className="flavor-fruit-stage" aria-hidden="true">
+          {flavors.map((flavor, index) => (
+            <div
+              className="flavor-fruit"
+              key={flavor.id}
+              ref={(element) => {
+                fruitRefs.current[index] = element;
+              }}
+            >
+              <img src={flavor.fruit} alt="" />
+            </div>
+          ))}
+        </div>
 
         {/* Side Scroll Indicator */}
         <div className="story-scroll-note" aria-hidden="true">
