@@ -241,6 +241,17 @@ export default function CanScene3D({
       shadowsRef.current.push(shadowMesh);
     });
 
+    // Start initial continuous spin on the active can
+    const initialSpinGroup = spinGroupsRef.current[activeFlavor];
+    if (initialSpinGroup) {
+      gsap.to(initialSpinGroup.rotation, {
+        y: `+=${Math.PI * 2}`,
+        duration: 3.2,
+        ease: "none",
+        repeat: -1,
+      });
+    }
+
     // 6. Handle window resize
     const handleResize = () => {
       if (!container || !camera || !renderer) return;
@@ -349,6 +360,17 @@ export default function CanScene3D({
       container.removeEventListener("pointermove", handlePointerMove);
       container.removeEventListener("pointerup", handlePointerUp);
       container.removeEventListener("pointerleave", handlePointerUp);
+      cansRef.current.forEach((can, i) => {
+        gsap.killTweensOf(can.position);
+        gsap.killTweensOf(can.rotation);
+        const spinGroup = spinGroupsRef.current[i];
+        if (spinGroup) gsap.killTweensOf(spinGroup.rotation);
+        const shadow = shadowsRef.current[i];
+        if (shadow) {
+          gsap.killTweensOf(shadow.position);
+          gsap.killTweensOf(shadow.material);
+        }
+      });
       renderer.dispose();
     };
   }, [canImages]);
@@ -356,28 +378,30 @@ export default function CanScene3D({
   // Animate 3D Can Rolling when activeFlavor changes
   useEffect(() => {
     if (cansRef.current.length === 0) return;
-    if (activeFlavor === prevActiveRef.current) return;
+    if (prevActiveRef.current === activeFlavor) return;
 
     cansRef.current.forEach((can, index) => {
       const shadow = shadowsRef.current[index];
       const spinGroup = spinGroupsRef.current[index];
       const targetX = (index - activeFlavor) * CAN_SPACING;
       const direction = activeFlavor > prevActiveRef.current ? 1 : -1;
-      // Physics roll: angle delta = - (deltaX / radius) * 1.15
       const targetRoll = -(targetX / CAN_RADIUS);
 
-      // Determine roll tilt angle during movement (can leans into roll)
-      if (spinGroup) {
-        gsap.killTweensOf(spinGroup.rotation);
-        if (index === activeFlavor) gsap.set(spinGroup.rotation, { y: 0 });
-      }
       const isCurrentActive = index === activeFlavor;
       const isPreviousActive = index === prevActiveRef.current;
+
+      gsap.killTweensOf(can.position);
+      gsap.killTweensOf(can.rotation);
+      if (spinGroup) {
+        gsap.killTweensOf(spinGroup.rotation);
+        if (isCurrentActive) gsap.set(spinGroup.rotation, { y: 0 });
+      }
+
       const rollLean = isCurrentActive || isPreviousActive
         ? (activeFlavor > prevActiveRef.current ? -0.22 : 0.22)
         : 0;
 
-      // Incoming active can starts just off the screen on the right and rolls into place.
+      // Incoming active can starts just off the screen on the right/left and rolls into place.
       if (isCurrentActive) {
         gsap.set(can.position, { x: targetX + direction * CAN_SPACING * 1.25 });
         gsap.set(can.rotation, { y: targetRoll + direction * 1.5 });
@@ -387,17 +411,26 @@ export default function CanScene3D({
       gsap.to(can.position, {
         x: targetX,
         duration: 1.35,
-        ease: "power2.inOut", overwrite: "auto",
+        ease: "power2.inOut",
       });
 
-      const dragAdjustment = index === activeFlavor ? dragAngleRef.current.value : 0;
+      const dragAdjustment = isCurrentActive ? dragAngleRef.current.value : 0;
 
-      // Roll rotation around Y-axis (cylinder spinning on floor) and user drag adjusts the active can.
-      gsap.to(can.rotation, {
+      // Finish the can's roll, then continuously turn its can assembly in place.
+      const rotationTimeline = gsap.timeline();
+      rotationTimeline.to(can.rotation, {
         y: targetRoll + dragAdjustment,
         duration: 1.35,
-        ease: "power2.inOut", overwrite: "auto",
+        ease: "power2.inOut",
       });
+      if (isCurrentActive && spinGroup) {
+        rotationTimeline.to(spinGroup.rotation, {
+          y: `+=${Math.PI * 2}`,
+          duration: 3.2,
+          ease: "none",
+          repeat: -1,
+        });
+      }
 
       // Subtle roll lean on Z-axis (settles back to 0)
       gsap.timeline()
@@ -409,15 +442,17 @@ export default function CanScene3D({
         .to(can.rotation, {
           z: 0,
           duration: 0.5,
-          ease: "power2.inOut", overwrite: "auto",
+          ease: "power2.inOut",
         });
 
       // Shadow position & scale
       if (shadow) {
+        gsap.killTweensOf(shadow.position);
+        gsap.killTweensOf(shadow.material);
         gsap.to(shadow.position, {
           x: targetX,
           duration: 0.95,
-          ease: "power2.inOut", overwrite: "auto",
+          ease: "power2.inOut",
         });
 
         gsap.to(shadow.material, {
@@ -429,6 +464,20 @@ export default function CanScene3D({
     });
 
     prevActiveRef.current = activeFlavor;
+
+    return () => {
+      cansRef.current.forEach((can, i) => {
+        gsap.killTweensOf(can.position);
+        gsap.killTweensOf(can.rotation);
+        const spinGroup = spinGroupsRef.current[i];
+        if (spinGroup) gsap.killTweensOf(spinGroup.rotation);
+        const shadow = shadowsRef.current[i];
+        if (shadow) {
+          gsap.killTweensOf(shadow.position);
+          gsap.killTweensOf(shadow.material);
+        }
+      });
+    };
   }, [activeFlavor]);
 
   return (

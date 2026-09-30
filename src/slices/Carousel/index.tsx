@@ -16,10 +16,6 @@ import cherryCan from "@/assets/can-cherry-lime.png";
 import mapleCan from "@/assets/can-maple-ginger.png";
 import raspberryCan from "@/assets/can-raspberry.png";
 
-import strawberryFruit from "@/assets/fruit-strawberry.png";
-import cherryFruit from "@/assets/fruit-cherry-lime.png";
-import mapleFruit from "@/assets/fruit-maple-ginger.png";
-import raspberryFruit from "@/assets/fruit-raspberry.png";
 
 import slide1 from "@/assets/slide-1.png";
 import slide2 from "@/assets/slide-2.png";
@@ -29,12 +25,13 @@ import slide4 from "@/assets/slide-4.png";
 import CanScene3D from "@/components/CanScene3D";
 import FluidRibbon from "@/components/FluidRibbon";
 
+
+
 type Flavor = {
   id: string;
   title: string[];
   description: string;
   image: string;
-  fruit: string;
   bgImage: string;
   color: string;
   textColor: string;
@@ -53,14 +50,13 @@ const flavors: Flavor[] = [
     title: ["watermelon", "crush"],
     description: "Cooler sips, bigger days. Refreshing sparkling watermelon craft soda made with real fruit juice, clean ingredients, and crisp bubbles.",
     image: "/textures/Watermelon.png",
-    fruit: strawberryFruit.src,
     bgImage: slide1.src,
-    color: "#e5c6cc",
+    color: "#e44d4d",
     textColor: "#212121",
     bg: {
-      left: "#d9d5ef",
-      right: "#f4ecc9",
-      accent: "#f0e3b5",
+      left: "#fffdfb",
+      right: "#e7f4e8",
+      accent: "#1b8d55",
     },
     pack: "A case of 24 cans (330ml)",
     price: "$74.50",
@@ -70,14 +66,13 @@ const flavors: Flavor[] = [
     title: ["yuzu citrus", "fizz"],
     description: "Bright citrus, bigger days. Zesty sparkling yuzu juice packed with sun-ripened citrus notes, natural flavours, and low sugar refreshment.",
     image: "/textures/FizzyLemonTexture.png",
-    fruit: cherryFruit.src,
     bgImage: slide2.src,
-    color: "#d8ddbe",
+    color: "#f3cc36",
     textColor: "#212121",
     bg: {
-      left: "#dfe7d6",
-      right: "#f7f0d0",
-      accent: "#e8dcaf",
+      left: "#fffefa",
+      right: "#fff3a6",
+      accent: "#2789ce",
     },
     pack: "A case of 24 cans (330ml)",
     price: "$74.50",
@@ -87,14 +82,13 @@ const flavors: Flavor[] = [
     title: ["berry", "wave"],
     description: "Mixed berries, higher moods. Crisp sparkling mixed berry and grape fusion bursting with dark berry sweetness and fizzy delight.",
     image: "/textures/FizzyGrapeTexture.png",
-    fruit: raspberryFruit.src,
     bgImage: slide3.src,
-    color: "#d7d1ef",
+    color: "#9255ad",
     textColor: "#212121",
     bg: {
-      left: "#d6d1eb",
-      right: "#f3e7c7",
-      accent: "#e8d9a5",
+      left: "#fffdfd",
+      right: "#f0e6f6",
+      accent: "#e5a6ca",
     },
     pack: "A case of 24 cans (330ml)",
     price: "$74.50",
@@ -104,14 +98,13 @@ const flavors: Flavor[] = [
     title: ["mango", "splash"],
     description: "Juicy mango, endless summer. Pure tropical sunshine and real mango juice with sparkling soda bubbles, low calories, and good vibes.",
     image: "/textures/FizzyMangoTexture.png",
-    fruit: mapleFruit.src,
     bgImage: slide4.src,
-    color: "#e9d7c2",
+    color: "#f47b20",
     textColor: "#212121",
     bg: {
-      left: "#e6d9d3",
-      right: "#f4edd0",
-      accent: "#e2d1a5",
+      left: "#fffdf8",
+      right: "#ffe28a",
+      accent: "#f27b24",
     },
     pack: "A case of 24 cans (330ml)",
     price: "$74.50",
@@ -124,7 +117,6 @@ const BASKET_KEY = "fizzy-basket-v1";
 export type CarouselProps = SliceComponentProps<Content.CarouselSlice>;
 export default function Carousel({ slice }: CarouselProps) {
   const stageRef = useRef<HTMLElement>(null);
-  const fruitRefs = useRef<(HTMLDivElement | null)[]>([]);
   const copyRef = useRef<HTMLDivElement>(null);
   const countRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -137,13 +129,79 @@ export default function Carousel({ slice }: CarouselProps) {
 
   const currentFlavorRef = useRef(activeFlavor);
   const stRef = useRef<ScrollTrigger | null>(null);
+  const transitionTlRef = useRef<gsap.core.Timeline | null>(null);
+  const scrollTweenRef = useRef<gsap.core.Tween | null>(null);
+
+  // Transition to target flavor with authentic Kombu can rolling & sliding
+  const goToFlavor = useCallback(
+    (targetIndex: number) => {
+      if (
+        targetIndex === currentFlavorRef.current ||
+        targetIndex < 0 ||
+        targetIndex >= flavors.length
+      ) {
+        return;
+      }
+
+      const direction = targetIndex > currentFlavorRef.current ? 1 : -1;
+      
+      currentFlavorRef.current = targetIndex;
+      setActiveFlavor(targetIndex);
+
+      if (titleRef.current && descRef.current && countRef.current) {
+        gsap.killTweensOf([countRef.current, titleRef.current, descRef.current]);
+      }
+
+      transitionTlRef.current?.kill();
+      const tl = gsap.timeline();
+      transitionTlRef.current = tl;
+
+      // 1. Text Copy exit to a clean directional slide, not a fade-out.
+      if (titleRef.current && descRef.current && countRef.current) {
+        tl.to(
+          [countRef.current, titleRef.current, descRef.current],
+          {
+            x: -40 * direction,
+            autoAlpha: 0,
+            duration: 0.26,
+            stagger: 0.04,
+            ease: "power2.in",
+          },
+          0
+        );
+      }
+
+      // 2. Text Copy entrance with a direct, crisp slide in.
+      if (titleRef.current && descRef.current && countRef.current) {
+        tl.fromTo(
+          [countRef.current, titleRef.current, descRef.current],
+          { x: 46 * direction, autoAlpha: 0 },
+          {
+            x: 0,
+            autoAlpha: 1,
+            duration: 0.52,
+            stagger: 0.05,
+            ease: "power2.out",
+          },
+          0.18
+        );
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!stageRef.current) return;
     const snapValues = flavors.map((_, i) => i / (flavors.length - 1));
     
+    // Kill any existing Carousel ScrollTrigger instances to prevent duplicates
+    ScrollTrigger.getById("carousel-scroll-trigger")?.kill();
+    stRef.current?.kill();
+    stRef.current = null;
+
     let ctx = gsap.context(() => {
       stRef.current = ScrollTrigger.create({
+        id: "carousel-scroll-trigger",
         trigger: stageRef.current,
         start: "top top",
         end: "+=3000",
@@ -162,16 +220,37 @@ export default function Carousel({ slice }: CarouselProps) {
         }
       });
     }, stageRef);
+
+    // Synchronize DOM pinning order with preceding asynchronous slices (SkyDive, AlternatingText)
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh();
+
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.sort();
+      ScrollTrigger.refresh();
+    }, 250);
+
     return () => {
+      clearTimeout(refreshTimer);
+      stRef.current?.kill();
       stRef.current = null;
+      ScrollTrigger.getById("carousel-scroll-trigger")?.kill();
       ctx.revert();
     };
-  }, []);
+  }, [goToFlavor]);
 
-  const isTransitioning = useRef(false);
-  const touchStartY = useRef<number | null>(null);
-  const touchStartX = useRef<number | null>(null);
-  const lastScrollTime = useRef<number>(0);
+  // Clean up component-owned timelines and tweens on unmount
+  useEffect(() => {
+    return () => {
+      transitionTlRef.current?.kill();
+      transitionTlRef.current = null;
+      scrollTweenRef.current?.kill();
+      scrollTweenRef.current = null;
+      if (titleRef.current && descRef.current && countRef.current) {
+        gsap.killTweensOf([countRef.current, titleRef.current, descRef.current]);
+      }
+    };
+  }, []);
 
   const totalItems = basket.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = basket.reduce((sum, item) => sum + 74.5 * item.quantity, 0);
@@ -197,130 +276,6 @@ export default function Carousel({ slice }: CarouselProps) {
     }
   }, [basket]);
 
-  // Initial setup for fruit positions
-  useEffect(() => {
-
-    fruitRefs.current.forEach((fruitEl, index) => {
-      if (!fruitEl) return;
-      if (index === 0) {
-        gsap.set(fruitEl, {
-          xPercent: 0,
-          yPercent: -50,
-          autoAlpha: 1,
-          scale: 1,
-        });
-      } else {
-        gsap.set(fruitEl, {
-          xPercent: 40,
-          yPercent: -50,
-          autoAlpha: 0,
-          scale: 0.92,
-        });
-      }
-    });
-  }, []);
-
-  // Transition to target flavor with authentic Kombu can rolling & sliding
-  const goToFlavor = useCallback(
-    (targetIndex: number) => {
-      if (
-        targetIndex === currentFlavorRef.current ||
-        targetIndex < 0 ||
-        targetIndex >= flavors.length
-      ) {
-        return;
-      }
-
-      const direction = targetIndex > currentFlavorRef.current ? 1 : -1;
-      
-      currentFlavorRef.current = targetIndex;
-      setActiveFlavor(targetIndex);
-
-      const currentFruit = fruitRefs.current[currentFlavorRef.current];
-      const nextFruit = fruitRefs.current[targetIndex];
-
-      if (titleRef.current && descRef.current && countRef.current) {
-        gsap.killTweensOf([countRef.current, titleRef.current, descRef.current]);
-      }
-
-      const tl = gsap.timeline();
-
-      // Bring the matching fruit in from the same side as the incoming can.
-      if (currentFruit && nextFruit) {
-        gsap.killTweensOf([currentFruit, nextFruit]);
-        tl.to(
-          currentFruit,
-          {
-            xPercent: -150 * direction,
-            autoAlpha: 0,
-            scale: 0.82,
-            rotation: -90 * direction,
-            duration: 0.72,
-            ease: "power2.in",
-          },
-          0
-        ).fromTo(
-          nextFruit,
-          {
-            xPercent: 150 * direction,
-            yPercent: -50,
-            autoAlpha: 0,
-            scale: 0.82,
-            rotation: 90 * direction,
-          },
-          {
-            xPercent: 0,
-            yPercent: -50,
-            autoAlpha: 1,
-            scale: 1,
-            rotation: 0,
-            duration: 1.05,
-            ease: "power2.out",
-          },
-          0.08
-        );
-      }
-
-      // 1. Text Copy exit to a clean directional slide, not a fade-out.
-      if (titleRef.current && descRef.current && countRef.current) {
-        tl.to(
-          [countRef.current, titleRef.current, descRef.current],
-          {
-            x: -40 * direction,
-            autoAlpha: 0,
-            duration: 0.26,
-            stagger: 0.04,
-            ease: "power2.in",
-          },
-          0
-        );
-      }
-
-      // 2. No decorative fruit layer — the flavor artwork is now limited to the can itself.
-      // The fruit viewport is intentionally removed to match the cleaner reference.
-
-      // 3. Text Copy entrance with a direct, crisp slide in.
-      if (titleRef.current && descRef.current && countRef.current) {
-        tl.fromTo(
-          [countRef.current, titleRef.current, descRef.current],
-          { x: 46 * direction, autoAlpha: 0 },
-          {
-            x: 0,
-            autoAlpha: 1,
-            duration: 0.52,
-            stagger: 0.05,
-            ease: "power2.out",
-          },
-          0.18
-        );
-      }
-    },
-    []
-  );
-
-  
-  
-  
   // Toast auto-clear
   useEffect(() => {
     if (!toast) return;
@@ -343,7 +298,12 @@ export default function Carousel({ slice }: CarouselProps) {
       const st = stRef.current;
       const targetProgress = index / (flavors.length - 1);
       const targetScroll = st.start + (st.end - st.start) * targetProgress;
-      gsap.to(window, { scrollTo: targetScroll, duration: 1, ease: "power2.inOut" });
+      scrollTweenRef.current?.kill();
+      scrollTweenRef.current = gsap.to(window, {
+        scrollTo: targetScroll,
+        duration: 1,
+        ease: "power2.inOut",
+      });
     } else {
       goToFlavor(index);
     }
@@ -442,12 +402,21 @@ export default function Carousel({ slice }: CarouselProps) {
 
           <div className="flavor-title-wrap">
             <h1 className="flavor-title" ref={titleRef}>
-              FRESH. FRUITY. FIZZY.
+              FIZZ YOUR DAY.
             </h1>
           </div>
 
           <p className="flavor-description" ref={descRef}>
-            GOOD VIBES IN EVERY SIP.
+            {activeFlavor === 0
+              ? "Watermelon Crush"
+              : currentFlavor.title
+                  .map((w) =>
+                    w
+                      .split(" ")
+                      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+                      .join(" ")
+                  )
+                  .join(" ")}
           </p>
 
           <p className="flavor-price">
@@ -497,20 +466,6 @@ export default function Carousel({ slice }: CarouselProps) {
           canImages={flavors.map((f) => f.image)}
           flavorColors={flavors.map((f) => f.color)}
         />
-
-        <div className="flavor-fruit-stage" aria-hidden="true">
-          {flavors.map((flavor, index) => (
-            <div
-              className="flavor-fruit"
-              key={flavor.id}
-              ref={(element) => {
-                fruitRefs.current[index] = element;
-              }}
-            >
-              <img src={flavor.fruit} alt="" />
-            </div>
-          ))}
-        </div>
 
         {/* Decorative fruit layer removed to keep the stage clean and product-focused. */}
 
