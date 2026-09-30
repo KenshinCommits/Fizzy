@@ -8,7 +8,12 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "tsx src/utils/seed.ts",
+    "seed": "tsx src/seed/seedDatabase.ts",
+    "db:migrate": "tsx src/utils/dbScripts.ts migrate",
+    "db:validate": "tsx src/utils/dbScripts.ts validate",
+    "db:indexes": "tsx src/utils/dbScripts.ts indexes",
+    "db:status": "tsx src/utils/dbScripts.ts status",
+    "db:seed:test": "NODE_ENV=test tsx src/utils/seed.ts",
     "test": "jest --coverage",
     "test:watch": "jest --watch"
   },

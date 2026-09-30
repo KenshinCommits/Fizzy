@@ -3,9 +3,7 @@ import { Event } from '../models/Event.js';
 import { logger } from '../config/logger.js';
 import { eventSchema } from '../validators/eventValidator.js';
 import { Types } from 'mongoose';
-import { scoringService } from '../services/scoringService.js';
-import { leadService } from '../services/leadService.js';
-import { emitEvent } from '../realtime/socketManager.js';
+import { eventProcessingService } from '../services/eventProcessingService.js';
 
 export class EventController {
   async createEvent(req: Request, res: Response) {
@@ -31,35 +29,11 @@ export class EventController {
 
       const event = await Event.create(eventData);
 
-      // Process scoring and lead update asynchronously
+      // Full event processing pipeline (async, non-blocking)
       if (eventData.userId) {
-        setImmediate(async () => {
-          try {
-            const lead = await leadService.findOrCreateLead(eventData.userId);
-            
-            // Update score
-            await scoringService.updateScore(
-              eventData.userId,
-              lead._id,
-              validatedData.eventType,
-              event._id,
-              validatedData.metadata
-            );
-
-            // Update lead behavior
-            await leadService.updateLeadBehavior(eventData.userId);
-
-            // Emit real-time event
-            emitEvent('event_created', {
-              type: validatedData.eventType,
-              userId: eventData.userId.toString(),
-              productId: eventData.productId?.toString(),
-              timestamp: event.timestamp
-            });
-          } catch (error) {
-            logger.error('Error processing event:', error);
-          }
-        });
+        setImmediate(() => eventProcessingService.processEvent(event).catch(
+          err => logger.error('Event processing pipeline error:', err)
+        ));
       }
 
       res.status(201).json({ 
