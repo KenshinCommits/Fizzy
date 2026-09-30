@@ -402,21 +402,12 @@ export default function Carousel({ slice }: CarouselProps) {
 
           <div className="flavor-title-wrap">
             <h1 className="flavor-title" ref={titleRef}>
-              FIZZ YOUR DAY.
+              FRESH. FRUITY. FIZZY.
             </h1>
           </div>
 
           <p className="flavor-description" ref={descRef}>
-            {activeFlavor === 0
-              ? "Watermelon Crush"
-              : currentFlavor.title
-                  .map((w) =>
-                    w
-                      .split(" ")
-                      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                      .join(" ")
-                  )
-                  .join(" ")}
+            GOOD VIBES IN EVERY SIP.
           </p>
 
           <p className="flavor-price">
