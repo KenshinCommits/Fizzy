@@ -24,6 +24,7 @@ import slide4 from "@/assets/slide-4.png";
 
 import CanScene3D from "@/components/CanScene3D";
 import FluidRibbon from "@/components/FluidRibbon";
+import { getStoredUser } from "@/lib/auth";
 
 
 
@@ -126,6 +127,7 @@ export default function Carousel({ slice }: CarouselProps) {
   const [basket, setBasket] = useState<BasketLine[]>([]);
   const [panel, setPanel] = useState<"menu" | "basket" | "details" | "story" | null>(null);
   const [toast, setToast] = useState("");
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   const currentFlavorRef = useRef(activeFlavor);
   const stRef = useRef<ScrollTrigger | null>(null);
@@ -252,6 +254,17 @@ export default function Carousel({ slice }: CarouselProps) {
     };
   }, []);
 
+  useEffect(() => {
+    const syncAuth = () => setIsSignedIn(Boolean(getStoredUser()));
+    syncAuth();
+    window.addEventListener("fizzi-auth-change", syncAuth);
+    window.addEventListener("storage", syncAuth);
+    return () => {
+      window.removeEventListener("fizzi-auth-change", syncAuth);
+      window.removeEventListener("storage", syncAuth);
+    };
+  }, []);
+
   const totalItems = basket.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = basket.reduce((sum, item) => sum + 74.5 * item.quantity, 0);
 
@@ -284,6 +297,10 @@ export default function Carousel({ slice }: CarouselProps) {
   }, [toast]);
 
   const addToBasket = (id: string) => {
+    if (!isSignedIn) {
+      window.location.assign("/login?next=/shop");
+      return;
+    }
     setBasket((items) => {
       const existing = items.find((item) => item.id === id);
       return existing
@@ -365,15 +382,15 @@ export default function Carousel({ slice }: CarouselProps) {
           <div className="header-actions">
             <a
               className="login-trigger"
-              href="/login"
-              aria-label="Log in"
+              href={isSignedIn ? "/shop" : "/login?next=/shop"}
+              aria-label={isSignedIn ? "Open shop" : "Log in"}
             >
-              <span>Log in</span>
+              <span>{isSignedIn ? "Shop" : "Log in"}</span>
             </a>
             <button
               className="basket-trigger"
               type="button"
-              onClick={() => setPanel("basket")}
+              onClick={() => isSignedIn ? setPanel("basket") : window.location.assign("/login?next=/shop")}
               aria-label={`Open basket, ${totalItems} items`}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
@@ -453,6 +470,10 @@ export default function Carousel({ slice }: CarouselProps) {
             href="#mixes"
             onClick={(event) => {
               event.preventDefault();
+              if (!isSignedIn) {
+                window.location.assign("/login?next=/shop");
+                return;
+              }
               setToast("Your mixed case is ready to explore");
             }}
           >
@@ -646,6 +667,10 @@ export default function Carousel({ slice }: CarouselProps) {
                   width: "100%",
                 }}
                 onClick={() => {
+                  if (!isSignedIn) {
+                    window.location.assign("/login?next=/shop");
+                    return;
+                  }
                   setPanel(null);
                   setToast("Checkout is ready for your next step");
                 }}

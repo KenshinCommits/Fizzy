@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { FormEvent, InputHTMLAttributes, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { saveSession } from "@/lib/auth";
 
 import styles from "./login.module.css";
 
@@ -14,6 +17,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const isSignup = mode === "signup";
 
@@ -41,9 +46,12 @@ export default function LoginPage() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "We couldn't sign you in. Please try again.");
-      if (data.token) localStorage.setItem("fizzi-auth-token", data.token);
-      if (data.user) localStorage.setItem("fizzi-user", JSON.stringify(data.user));
+      if (!data.token || !data.user) throw new Error("Your account was created, but we couldn't start your session. Please log in.");
+      saveSession(data.token, data.user);
       setSuccess(isSignup ? "Your Fizzi account is ready." : `Welcome back${data.user?.firstName ? `, ${data.user.firstName}` : ""}.`);
+      const next = searchParams.get("next");
+      const destination = next?.startsWith("/") && !next.startsWith("//") ? next : "/shop";
+      window.setTimeout(() => router.replace(destination), 700);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "We couldn't connect. Please try again.");
     } finally {
@@ -95,7 +103,7 @@ export default function LoginPage() {
             </div>
             <h2 id="login-title">{isSignup ? <>Welcome to <em>Fizzi.</em></> : <>Welcome <em>back.</em></>}</h2>
             <p className={styles.subtitle}>{isSignup ? "Fresh account. Fresh flavors. Let’s get started." : <>Good to see you again.<br />Let’s get you back to the good stuff.</>}</p>
-            {success ? <div className={styles.success}><span>✓</span><h3>{success}</h3><p>Your next good thing is right this way.</p><Link href="/" className={styles.primary}>Back to Fizzi <b>→</b></Link></div> :
+            {success ? <div className={styles.success}><span>✓</span><h3>{success}</h3><p>Taking you to the shop…</p><Link href="/shop" className={styles.primary}>Go to shop <b>→</b></Link></div> :
               <form onSubmit={submit} noValidate>
                 {isSignup && <div className={styles.nameFields}><Field label="First name" name="firstName" autoComplete="given-name" /><Field label="Last name" name="lastName" autoComplete="family-name" /></div>}
                 <Field label="Email address" name="email" type="email" placeholder="you@example.com" autoComplete="email" />

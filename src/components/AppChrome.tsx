@@ -7,12 +7,12 @@ import ViewCanvas from "@/components/ViewCanvas";
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLogin = pathname === "/login";
+  const isStandalonePage = pathname === "/login" || pathname === "/shop";
 
   return (
     <>
-      {!isLogin && <Header />}
-      <main>{children}{!isLogin && <ViewCanvas />}</main>
+      {!isStandalonePage && <Header />}
+      <main>{children}{!isStandalonePage && <ViewCanvas />}</main>
     </>
   );
 }

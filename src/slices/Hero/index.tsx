@@ -131,7 +131,7 @@ const Hero = ({ slice }: HeroProps): JSX.Element => {
               A modern canned beverage brand featuring craft sodas, sparkling fruit juices, and summer coolers.
             </div>
             <Button
-              buttonLink="/"
+              buttonLink="/login?next=/shop"
               buttonText="Shop Now"
               className="hero-button mt-12"
             />
