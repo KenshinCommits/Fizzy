@@ -19,5 +19,14 @@ router.get('/agent-analysis/:userId', authenticate, authorize(...adminRoles), ad
 router.get('/scoring/rules', authenticate, authorize(...adminRoles), adminController.getScoringRules.bind(adminController));
 router.patch('/scoring/rules', authenticate, authorize('super_admin', 'admin'), adminController.updateScoringRules.bind(adminController));
 router.get('/analytics', authenticate, authorize(...adminRoles), adminController.getAnalytics.bind(adminController));
+router.get('/abandoned-carts', authenticate, authorize(...adminRoles), adminController.getAbandonedCarts.bind(adminController));
+router.get('/score-history', authenticate, authorize(...adminRoles), adminController.getScoreHistory.bind(adminController));
+router.get('/salespeople', authenticate, authorize(...adminRoles), adminController.getSalespeople.bind(adminController));
+router.get('/settings', authenticate, authorize(...adminRoles), adminController.getSettings.bind(adminController));
+router.patch('/settings', authenticate, authorize('super_admin', 'admin'), adminController.updateSettings.bind(adminController));
+router.get('/products', authenticate, authorize(...adminRoles), adminController.getAdminProducts.bind(adminController));
+router.post('/products', authenticate, authorize('super_admin', 'admin'), adminController.createAdminProduct.bind(adminController));
+router.patch('/products/:id', authenticate, authorize('super_admin', 'admin'), adminController.updateAdminProduct.bind(adminController));
+router.delete('/products/:id', authenticate, authorize('super_admin', 'admin'), adminController.deleteAdminProduct.bind(adminController));
 
 export default router;

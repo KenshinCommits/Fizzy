@@ -1,4 +1,4 @@
-import { Lead, LeadEvent } from './types';
+import type { Lead, LeadEvent } from './types';
 import { processLeadEvent, applyInactivityDecay } from './engine';
 
 function logStep(step: string, lead: Lead, scoreChange?: any) {
