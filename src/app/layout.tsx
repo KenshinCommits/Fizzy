@@ -4,8 +4,7 @@ import { PrismicPreview } from "@prismicio/next";
 import { repositoryName } from "@/prismicio";
 
 import "./app.css";
-import Header from "@/components/Header";
-import ViewCanvas from "@/components/ViewCanvas";
+import { AppChrome } from "@/components/AppChrome";
 
 const alpino = localFont({
   src: "../../public/fonts/Alpino-Variable.woff2",
@@ -22,11 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={alpino.variable}>
       <body className="overflow-x-hidden bg-brand-background">
-        <Header />
-        <main>
-          {children}
-          <ViewCanvas />
-        </main>
+        <AppChrome>{children}</AppChrome>
       </body>
       <PrismicPreview repositoryName={repositoryName} />
     </html>

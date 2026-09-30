@@ -363,13 +363,13 @@ export default function Carousel({ slice }: CarouselProps) {
           </a>
 
           <div className="header-actions">
-            <button
+            <a
               className="login-trigger"
-              type="button"
+              href="/login"
               aria-label="Log in"
             >
               <span>Log in</span>
-            </button>
+            </a>
             <button
               className="basket-trigger"
               type="button"
