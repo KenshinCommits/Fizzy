@@ -1,26 +1,25 @@
-# FIZZY | Watermelon Crush Landing Page
+# Fizzi Website - Final code
 
-A highly polished, immersive, scroll-driven Next.js 15 product landing page for **FIZZY Craft Soda**, featuring 3D product rendering, GSAP ScrollTrigger cinematography, and interactive Framer Motion elements.
+This is the final code for the YouTube tutorial course where we build a 3D animated e-commerce landing page for the fictional soda brand, Fizzi!
 
-## Tech Stack
-- Next.js 15 (App Router)
-- React
-- TypeScript
-- Tailwind CSS (v4)
-- Framer Motion
-- GSAP + ScrollTrigger
-- Three.js / React Three Fiber / Drei
-- Lenis (Smooth Scrolling)
+For more information and to watch the course go to the [course documentation](https://dub.sh/fizzi).
 
-## Quick Start
-```bash
-npm install
-npm run dev
-```
+## Skip the tutorial and launch the site
 
-Visit `http://localhost:3000` to view the immersive experience.
+If you don’t want to go through the tutorial, but want your own version of the website deployed on Prismic, follow these directions:
 
-## Features
-- **Cinematic 3D Scroll Flow:** GSAP ScrollTrigger seamlessly maneuvers the 3D `FizzyCan.glb` through the camera's FOV as you scroll through the page.
-- **Interactive Watermelon:** A custom mouse-following, spring-animated slice moment built with Framer Motion.
-- **Performant Rendering:** Idle GSAP timelines bound to document scroll and off-thread smooth scrolling using Lenis.
+1. Clone the code:
+    
+    ```tsx
+    npx @slicemachine/init@latest --starter course-fizzi-next
+    ```
+    
+2. Open the Prismic repository and select “English - United States”.
+3. Run the content set up script:
+    
+    ```tsx
+    npm run set-up-content
+    ```
+    
+4. Open the migration release and publish it. A URL will be printed on the screen.
+5. Set up the slice simulator URL: `http://localhost:3000/slice-simulator`

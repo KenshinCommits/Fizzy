@@ -1,26 +1,36 @@
-import type { Metadata } from 'next';
-import { Outfit } from 'next/font/google';
-import './globals.css';
-import Navigation from '@/components/Navigation';
+import localFont from "next/font/local";
 
-const outfit = Outfit({ subsets: ['latin'], weight: ['400', '600', '800', '900'] });
+import { PrismicPreview } from "@prismicio/next";
+import { repositoryName } from "@/prismicio";
 
-export const metadata: Metadata = {
-  title: 'FIZZY | Watermelon Crush',
-  description: 'Juicy watermelon. Bright bubbles. Zero boring sips.',
-};
+import "./app.css";
+import Header from "@/components/Header";
+import ViewCanvas from "@/components/ViewCanvas";
+import Footer from "@/components/Footer";
+
+const alpino = localFont({
+  src: "../../public/fonts/Alpino-Variable.woff2",
+  display: "swap",
+  weight: "100 900",
+  variable: "--font-alpino",
+});
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="en">
-      <body className={outfit.className}>
-        <Navigation />
-        {children}
+    <html lang="en" className={alpino.variable}>
+      <body className="overflow-x-hidden bg-brand-background">
+        <Header />
+        <main>
+          {children}
+          <ViewCanvas />
+        </main>
+        <Footer />
       </body>
+      <PrismicPreview repositoryName={repositoryName} />
     </html>
   );
 }
