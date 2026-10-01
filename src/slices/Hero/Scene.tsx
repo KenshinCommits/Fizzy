@@ -8,6 +8,7 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import FloatingCan from "@/components/FloatingCan";
+import SafeEnvironment from "@/components/SafeEnvironment";
 import { useStore } from "@/hooks/useStore";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -186,7 +187,7 @@ export default function Scene({}: Props) {
         scale={1}
       />
 
-      <Environment files="/hdr/lobby.hdr" environmentIntensity={1.5} />
+      <SafeEnvironment files="/hdr/lobby.hdr" environmentIntensity={1.5} />
     </group>
   );
 }

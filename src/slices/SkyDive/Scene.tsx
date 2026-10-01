@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import FloatingCan from "@/components/FloatingCan";
+import SafeEnvironment from "@/components/SafeEnvironment";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -181,7 +182,7 @@ export default function Scene({ sentence, flavor }: SkyDiveProps) {
 
       {/* Lights */}
       <ambientLight intensity={2} color="#9DDEFA" />
-      <Environment files="/hdr/field.hdr" environmentIntensity={1.5} />
+      <SafeEnvironment files="/hdr/field.hdr" environmentIntensity={1.5} />
     </group>
   );
 }

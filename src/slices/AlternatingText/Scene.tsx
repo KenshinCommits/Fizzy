@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
 import FloatingCan from "@/components/FloatingCan";
+import SafeEnvironment from "@/components/SafeEnvironment";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -74,7 +75,7 @@ export default function Scene({}: Props) {
       rotation-y={isDesktop ? -0.3 : 0}
     >
       <FloatingCan flavor="strawberryLemonade" />
-      <Environment files={"/hdr/lobby.hdr"} environmentIntensity={1.5} />
+      <SafeEnvironment files={"/hdr/lobby.hdr"} environmentIntensity={1.5} />
     </group>
   );
 }
