@@ -48,11 +48,11 @@ export default function Scene({}: Props) {
 
     // Set can starting location (Scale 1 on FloatingCan, controlled via GSAP)
     gsap.set(can1Ref.current.position, { x: -1.5, y: 0, z: 0 });
-    gsap.set(can1Ref.current.rotation, { z: -0.5 });
+    gsap.set(can1Ref.current.rotation, { z: 0.5 });
     gsap.set(can1Ref.current.scale, { x: 2.5, y: 2.5, z: 2.5 });
 
     gsap.set(can2Ref.current.position, { x: 1.5, y: 0, z: 0 });
-    gsap.set(can2Ref.current.rotation, { z: 0.5 });
+    gsap.set(can2Ref.current.rotation, { z: -0.5 });
     gsap.set(can2Ref.current.scale, { x: 2.5, y: 2.5, z: 2.5 });
 
     gsap.set(can3Ref.current.position, { x: -0.28, y: 6, z: 2 });
