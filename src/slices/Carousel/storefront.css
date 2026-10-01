@@ -297,6 +297,14 @@
 
 
 .can-3d-viewport {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-30%, -50%);
+  width: 100%;
+  height: 100%;
+  z-index: 7;
+  pointer-events: none;
   overflow: hidden;
 }
 
@@ -452,6 +460,10 @@
 }
 
 @media (max-width: 760px) {
+  .can-3d-viewport {
+    transform: translate(-50%, -50%);
+  }
+
   .stage-header {
     min-height: 72px;
     padding: 14px 18px;

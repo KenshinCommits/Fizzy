@@ -19,7 +19,7 @@ const SkyDive = ({ slice }: SkyDiveProps): JSX.Element => {
     <Bounded
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
-      className="skydive h-screen"
+      className="skydive h-screen -mt-[100vh] relative z-30"
     >
       <h2 className="sr-only">Refresh your summer with Fizzy.</h2>
       <View className="h-screen w-screen">

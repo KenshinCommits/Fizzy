@@ -440,16 +440,6 @@ export default function CanScene3D({
     <div
       ref={containerRef}
       className="can-3d-viewport"
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
-        width: "100%",
-        height: "100%",
-        zIndex: 7,
-        pointerEvents: "none",
-      }}
     />
   );
 }
