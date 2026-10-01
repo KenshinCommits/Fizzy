@@ -14,6 +14,7 @@ import webhookRoutes from './routes/webhookRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import fulkyRoutes from './routes/fulkyRoutes.js';
+import retellRoutes from './routes/retellRoutes.js';
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/webhooks', webhookRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/fulky', fulkyRoutes);
+app.use('/api/retell', retellRoutes);
 
 // 404 handler
 app.use((req, res) => {

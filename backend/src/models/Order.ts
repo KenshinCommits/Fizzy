@@ -4,6 +4,13 @@ export interface IOrderItem {
   product: Types.ObjectId;
   productName: string;
   productSku: string;
+  productSnapshot: {
+    name: string;
+    image: string;
+    packSize: string;
+    price: number;
+    sku: string;
+  };
   quantity: number;
   price: number;
   total: number;
@@ -45,6 +52,13 @@ const orderSchema = new Schema<IOrder>(
         product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
         productName: { type: String, required: true },
         productSku: { type: String, required: true },
+        productSnapshot: {
+          name: { type: String, default: '' },
+          image: { type: String, default: '' },
+          packSize: { type: String, default: '' },
+          price: { type: Number, default: 0 },
+          sku: { type: String, default: '' },
+        },
         quantity: { type: Number, required: true },
         price: { type: Number, required: true },
         total: { type: Number, required: true }

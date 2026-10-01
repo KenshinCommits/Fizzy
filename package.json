@@ -6,7 +6,7 @@
   "author": "Prismic <contact@prismic.io> (https://prismic.io)",
   "scripts": {
     "dev": "concurrently \"npm:next:dev\" \"npm:slicemachine\" --names \"next,slicemachine\" --prefix-colors blue,magenta",
-    "next:dev": "next dev",
+    "next:dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -27,6 +27,7 @@
     "next": "14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "retell-client-js-sdk": "^3.0.2",
     "three": "^0.167.1",
     "zustand": "^4.5.5"
   },

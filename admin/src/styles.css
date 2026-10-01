@@ -2884,6 +2884,25 @@ button.list-person:hover {
 .settings-nav button:hover {
   background: #edeade;
 }
+.settings-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #c0392b;
+  background: transparent;
+  border: 1px solid #f5c6c2;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.settings-logout:hover {
+  background: #fdecea;
+  color: #a93226;
+}
 .settings-content {
   padding: 5px 24px 10px;
   min-height: 330px;

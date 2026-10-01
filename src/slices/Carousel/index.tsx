@@ -115,8 +115,20 @@ const flavors: Flavor[] = [
 const flavorCanImages = flavors.map((flavor) => flavor.image);
 const flavorColors = flavors.map((flavor) => flavor.color);
 
-type BasketLine = { id: string; quantity: number };
+type BasketLine = { id: string; quantity: number; price?: number };
 const BASKET_KEY = "fizzy-basket-v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
+
+async function apiAddToCart(productId: string): Promise<void> {
+  const { AUTH_TOKEN_KEY } = await import("@/lib/auth");
+  const token = typeof window !== "undefined" ? window.localStorage.getItem(AUTH_TOKEN_KEY) : null;
+  if (!token) return;
+  await fetch(`${API_URL}/cart/items`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ productId, quantity: 1 }),
+  }).catch(() => {/* non-blocking */});
+}
 
 export type CarouselProps = SliceComponentProps<Content.CarouselSlice>;
 export default function Carousel({ slice }: CarouselProps) {
@@ -310,6 +322,8 @@ export default function Carousel({ slice }: CarouselProps) {
         ? items.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item))
         : [...items, { id, quantity: 1 }];
     });
+    // Also sync to backend cart (best-effort, non-blocking)
+    apiAddToCart(id);
     setToast("Added to your basket");
   };
 

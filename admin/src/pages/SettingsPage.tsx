@@ -1,4 +1,4 @@
-import { ArrowRight, Save, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, LogOut, Save, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { PageHeader } from "../components/PageHeader";
 import { Avatar, Badge, Panel } from "../components/ui";
@@ -35,6 +35,15 @@ export function SettingsPage() {
       />
     </label>
   );
+  const storefrontUrl =
+    (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_FRONTEND_URL) ||
+    "http://localhost:3000";
+
+  function handleLogout() {
+    localStorage.removeItem("fizzi-admin-token");
+    window.location.assign(storefrontUrl);
+  }
+
   return (
     <>
       <PageHeader
@@ -64,6 +73,14 @@ export function SettingsPage() {
               <ArrowRight size={14} />
             </button>
           ))}
+          <button
+            className="settings-logout"
+            type="button"
+            onClick={handleLogout}
+          >
+            <LogOut size={14} />
+            Sign out
+          </button>
         </nav>
         <Panel title={tab} eyebrow="WORKSPACE SETTINGS">
           <form
