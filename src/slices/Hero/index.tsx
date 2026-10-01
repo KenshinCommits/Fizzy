@@ -80,23 +80,54 @@ const Hero = ({ slice }: HeroProps): JSX.Element => {
           },
           {
             backgroundColor: "#ACE2E1", // Transition to seafoam
+            duration: 3,
             overwrite: "auto",
           },
           1,
         )
-        .from(".text-side-heading .split-char", {
-          scale: 1.3,
-          y: 40,
-          rotate: -25,
-          opacity: 0,
-          stagger: 0.1,
-          ease: "back.out(3)",
-          duration: 0.5,
-        })
-        .from(".text-side-body", {
-          y: 20,
-          opacity: 0,
-        });
+        .fromTo(
+          ".text-side-heading .split-char",
+          {
+            scale: 1.3,
+            y: 40,
+            rotate: -25,
+            opacity: 0,
+          },
+          {
+            scale: 1,
+            y: 0,
+            rotate: 0,
+            opacity: 1,
+            stagger: 0.05,
+            ease: "back.out(2)",
+            duration: 1.8,
+          },
+          4.2,
+        )
+        .fromTo(
+          ".text-side-body",
+          {
+            y: 20,
+            opacity: 0,
+          },
+          {
+            y: 0,
+            opacity: 0.85,
+            duration: 1.2,
+          },
+          5.2,
+        )
+        .to(
+          ".text-side",
+          {
+            opacity: 0,
+            scale: 0.85,
+            y: -40,
+            ease: "power2.in",
+            duration: 2.0,
+          },
+          7.8,
+        );
     },
     { dependencies: [ready, isDesktop] },
   );
@@ -139,12 +170,12 @@ const Hero = ({ slice }: HeroProps): JSX.Element => {
           </div>
         </div>
 
-        <div className="text-side relative z-20 grid h-screen items-center gap-4 md:grid-cols-2 px-8 md:px-16">
-          <div className="max-w-xl">
-            <h2 className="text-side-heading text-balance text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight text-brand-navy">
+        <div className="text-side relative z-20 grid h-screen place-items-center text-center px-4">
+          <div className="max-w-xl mx-auto">
+            <h2 className="text-side-heading text-balance text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-brand-navy">
               <TextSplitter text="FRESH. FRUITY. FIZZY." />
             </h2>
-            <div className="text-side-body mt-4 text-balance text-base md:text-lg font-bold uppercase tracking-wider text-brand-navy opacity-80">
+            <div className="text-side-body mt-4 text-balance text-base md:text-xl font-bold uppercase tracking-wider text-brand-navy opacity-80">
               <p>GOOD VIBES IN EVERY SIP.</p>
             </div>
           </div>
