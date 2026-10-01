@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { gsap } from "gsap";
 
 interface CanScene3DProps {
@@ -63,28 +64,45 @@ export default function CanScene3D({
     container.replaceChildren(renderer.domElement);
 
     // 2. Lighting setup (creating photorealistic metallic cylinder reflections)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
     // Key light from top-left front
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
     keyLight.position.set(-3.5, 5, 5);
     scene.add(keyLight);
 
     // Specular shine light from right
-    const rimLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    const rimLight = new THREE.DirectionalLight(0xffffff, 2.4);
     rimLight.position.set(4, 2, 3);
     scene.add(rimLight);
 
     // Soft fill from bottom front
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1.2);
     fillLight.position.set(0, -3.5, 3);
     scene.add(fillLight);
 
     // Subtle colored top backlight
-    const backLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    const backLight = new THREE.DirectionalLight(0xffffff, 1.2);
     backLight.position.set(0, 4, -3);
     scene.add(backLight);
+
+    // Load HDRI environment map for photorealistic metallic reflections
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+    new RGBELoader().load(
+      "/hdr/lobby.hdr",
+      (hdrTexture) => {
+        const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
+        scene.environment = envMap;
+        hdrTexture.dispose();
+        pmremGenerator.dispose();
+      },
+      undefined,
+      (err) => {
+        console.warn("Could not load HDR environment in CanScene3D:", err);
+      }
+    );
 
     // 3. Texture background color palette matching each flavor
     const CAN_BG_COLORS = [
@@ -127,17 +145,19 @@ export default function CanScene3D({
 
       const canBgColor = CAN_BG_COLORS[index % CAN_BG_COLORS.length] || "#fef9da";
 
-      // Color-matched satin rim and lid materials matching the can texture background
+      // Color-matched metallic rim and lid materials matching the can texture background
       const canRimMaterial = new THREE.MeshStandardMaterial({
         color: canBgColor,
-        metalness: 0.12,
-        roughness: 0.32,
+        metalness: 0.62,
+        roughness: 0.18,
+        envMapIntensity: 1.8,
       });
 
       const canLidMaterial = new THREE.MeshStandardMaterial({
         color: canBgColor,
-        metalness: 0.15,
-        roughness: 0.38,
+        metalness: 0.68,
+        roughness: 0.22,
+        envMapIntensity: 1.8,
       });
 
       // Can body texture
@@ -166,8 +186,9 @@ export default function CanScene3D({
 
       const bodyMaterial = new THREE.MeshStandardMaterial({
         map: texture,
-        metalness: 0.14,
-        roughness: 0.38,
+        metalness: 0.60,
+        roughness: 0.18,
+        envMapIntensity: 1.8,
       });
 
       const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
