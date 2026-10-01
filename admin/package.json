@@ -1,0 +1,31 @@
+{
+  "name": "fizzi-admin",
+  "version": "1.0.0",
+  "description": "Fizzi CRM Admin Dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.344.0",
+    "recharts": "^2.12.0",
+    "three": "^0.161.0",
+    "@react-three/fiber": "^8.15.0",
+    "@react-three/drei": "^9.99.0",
+    "@fontsource-variable/dm-sans": "^5.0.0",
+    "@fontsource-variable/manrope": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/three": "^0.161.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0"
+  }
+}
