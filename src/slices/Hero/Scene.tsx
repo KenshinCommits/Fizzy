@@ -82,60 +82,65 @@ export default function Scene({}: Props) {
       },
     });
 
-    // 1. Cluster Phase (t = 0 to 3.0): 4 cans form a tight diamond cluster in center
+    // 1. Cluster Phase (t = 0 to 3.0): 4 cans form a tight diamond cluster in center with Fizzy logo facing forward
     scrollTl
       // Can 1 (Watermelon) -> cluster bottom-left
       .to(can1Ref.current.position, { x: -0.32, y: -0.32, z: 0.2, duration: 3.0, ease: "power2.inOut" }, 0)
-      .to(can1Ref.current.rotation, { x: 0.08, y: Math.PI * 0.4, z: 0.14, duration: 3.0, ease: "power2.inOut" }, 0)
+      .to(can1Ref.current.rotation, { x: 0.08, y: 0.1, z: 0.14, duration: 3.0, ease: "power2.inOut" }, 0)
       .to(can1Ref.current.scale, { x: 1.6, y: 1.6, z: 1.6, duration: 3.0, ease: "power2.inOut" }, 0)
 
       // Can 2 (Yuzu / Lemon Lime) -> cluster top-right
       .to(can2Ref.current.position, { x: 0.32, y: 0.32, z: -0.15, duration: 3.0, ease: "power2.inOut" }, 0)
-      .to(can2Ref.current.rotation, { x: -0.08, y: -Math.PI * 0.4, z: -0.14, duration: 3.0, ease: "power2.inOut" }, 0)
+      .to(can2Ref.current.rotation, { x: -0.08, y: -0.1, z: -0.14, duration: 3.0, ease: "power2.inOut" }, 0)
       .to(can2Ref.current.scale, { x: 1.6, y: 1.6, z: 1.6, duration: 3.0, ease: "power2.inOut" }, 0)
 
       // Can 3 (Berry Wave / Grape) -> cluster top-left
       .to(can3Ref.current.position, { x: -0.28, y: 0.35, z: -0.12, duration: 3.0, ease: "power2.inOut" }, 0)
-      .to(can3Ref.current.rotation, { x: 0.12, y: Math.PI * 0.3, z: -0.1, duration: 3.0, ease: "power2.inOut" }, 0)
+      .to(can3Ref.current.rotation, { x: 0.12, y: 0.15, z: -0.1, duration: 3.0, ease: "power2.inOut" }, 0)
       .to(can3Ref.current.scale, { x: 1.6, y: 1.6, z: 1.6, duration: 3.0, ease: "power2.inOut" }, 0)
 
       // Can 4 (Mango Splash) -> cluster bottom-right
       .to(can4Ref.current.position, { x: 0.28, y: -0.35, z: 0.18, duration: 3.0, ease: "power2.inOut" }, 0)
-      .to(can4Ref.current.rotation, { x: -0.12, y: -Math.PI * 0.3, z: 0.15, duration: 3.0, ease: "power2.inOut" }, 0)
+      .to(can4Ref.current.rotation, { x: -0.12, y: -0.15, z: 0.15, duration: 3.0, ease: "power2.inOut" }, 0)
       .to(can4Ref.current.scale, { x: 1.6, y: 1.6, z: 1.6, duration: 3.0, ease: "power2.inOut" }, 0);
 
-    // 2. Spread Phase (t = 4.2 to 6.8): Cans smoothly spread to 2 on left, 2 on right
+    // 2. Spread Phase (t = 3.6 to 6.8): Cans smoothly spread to 2 on left, 2 on right, Fizzy logo clearly facing forward
     scrollTl
       // Left Pair: Can 1 & Can 3
-      .to(can1Ref.current.position, { x: -1.35, y: -0.38, z: 0.1, duration: 2.6, ease: "power2.out" }, 4.2)
-      .to(can1Ref.current.rotation, { x: 0.05, y: Math.PI * 0.8, z: 0.16, duration: 2.6, ease: "power2.out" }, 4.2)
+      .to(can1Ref.current.position, { x: -1.35, y: -0.38, z: 0.1, duration: 2.8, ease: "power2.out" }, 3.6)
+      .to(can1Ref.current.rotation, { x: 0.05, y: 0.15, z: 0.12, duration: 2.8, ease: "power2.out" }, 3.6)
 
-      .to(can3Ref.current.position, { x: -1.05, y: 0.42, z: -0.2, duration: 2.6, ease: "power2.out" }, 4.2)
-      .to(can3Ref.current.rotation, { x: -0.05, y: Math.PI * 0.6, z: -0.12, duration: 2.6, ease: "power2.out" }, 4.2)
+      .to(can3Ref.current.position, { x: -1.05, y: 0.42, z: -0.2, duration: 2.8, ease: "power2.out" }, 3.6)
+      .to(can3Ref.current.rotation, { x: -0.05, y: 0.2, z: -0.1, duration: 2.8, ease: "power2.out" }, 3.6)
 
       // Right Pair: Can 2 & Can 4
-      .to(can2Ref.current.position, { x: 1.05, y: 0.42, z: -0.2, duration: 2.6, ease: "power2.out" }, 4.2)
-      .to(can2Ref.current.rotation, { x: -0.05, y: -Math.PI * 0.6, z: 0.12, duration: 2.6, ease: "power2.out" }, 4.2)
+      .to(can2Ref.current.position, { x: 1.05, y: 0.42, z: -0.2, duration: 2.8, ease: "power2.out" }, 3.6)
+      .to(can2Ref.current.rotation, { x: -0.05, y: -0.2, z: 0.1, duration: 2.8, ease: "power2.out" }, 3.6)
 
-      .to(can4Ref.current.position, { x: 1.35, y: -0.38, z: 0.1, duration: 2.6, ease: "power2.out" }, 4.2)
-      .to(can4Ref.current.rotation, { x: 0.05, y: -Math.PI * 0.8, z: -0.16, duration: 2.6, ease: "power2.out" }, 4.2);
+      .to(can4Ref.current.position, { x: 1.35, y: -0.38, z: 0.1, duration: 2.8, ease: "power2.out" }, 3.6)
+      .to(can4Ref.current.rotation, { x: 0.05, y: -0.15, z: -0.12, duration: 2.8, ease: "power2.out" }, 3.6);
 
-    // 3. Merge and Fade Out Phase (t = 7.8 to 10.0): Cans all merge back to center and scale down to 0 before exiting
+    // 3. Merge Down and Fade Out Phase (t = 7.5 to 10.0): Cans merge together in center, plunge down through bottom, and fade out
     scrollTl
       .to([can1Ref.current.position, can2Ref.current.position, can3Ref.current.position, can4Ref.current.position], {
         x: 0,
-        y: 0,
-        z: -2.0,
-        duration: 2.2,
+        y: -5.5,
+        z: -1.0,
+        duration: 2.5,
         ease: "power2.in",
-      }, 7.8)
+      }, 7.5)
+      .to([can1Ref.current.rotation, can2Ref.current.rotation, can3Ref.current.rotation, can4Ref.current.rotation], {
+        x: -0.4,
+        duration: 2.5,
+        ease: "power2.in",
+      }, 7.5)
       .to([can1Ref.current.scale, can2Ref.current.scale, can3Ref.current.scale, can4Ref.current.scale], {
         x: 0,
         y: 0,
         z: 0,
-        duration: 2.2,
+        duration: 2.5,
         ease: "power2.in",
-      }, 7.8);
+      }, 7.5);
   });
 
   return (
