@@ -60,6 +60,10 @@ export class RetellWebhookController {
         conversation.durationSeconds = call.duration_seconds || 0;
         conversation.status = 'completed';
         conversation.transcript = call.transcript || [];
+        // Store recording URL if Retell provides it
+        if (call.recording_url) {
+          conversation.recordingUrl = call.recording_url;
+        }
         await conversation.save();
 
         emitEvent('agent_call_completed', {

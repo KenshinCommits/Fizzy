@@ -44,7 +44,8 @@ export function Notifications({ openCustomer }: CustomerProps) {
         </div>
         {rows.length ? (
           rows.map((e) => {
-            const c = data.customers.find((c) => c.userId === e.customerId)!;
+            const c = data.customers.find((c) => c.userId === e.customerId);
+            if (!c) return null;
             return (
               <button
                 className={`notification-row ${data.readNotifications.includes(e.id) ? "read" : ""}`}

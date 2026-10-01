@@ -89,7 +89,8 @@ export function ActivityPage({ openCustomer }: CustomerProps) {
               {events.map((e) => {
                 const c = data.customers.find(
                   (c) => c.userId === e.customerId,
-                )!;
+                );
+                if (!c) return null;
                 return (
                   <tr className="event-table-row" key={e.id}>
                     <td className="mono">{time(e.timestamp)}</td>

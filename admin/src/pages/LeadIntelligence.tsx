@@ -7,13 +7,34 @@ import { time, useStore } from "../lib/store";
 type CustomerProps = { openCustomer: (id: string) => void };
 export function Intelligence({ openCustomer }: CustomerProps) {
   const { data } = useStore();
-  const [selected, setSelected] = useState("ruthvik");
-  const c = data.customers.find((c) => c.userId === selected)!;
-  const ledger = data.scoreHistory.filter((s) => s.customerId === selected);
+  const [selected, setSelected] = useState("");
+  const c =
+    data.customers.find((customer) => customer.userId === selected) ??
+    data.customers[0];
+  const ledger = c
+    ? data.scoreHistory.filter((score) => score.customerId === c.userId)
+    : [];
   const dist = ["Low", "Medium", "High", "Very high"].map((name) => ({
     name,
     value: data.customers.filter((c) => c.intent === name).length,
   }));
+  if (!c) {
+    return (
+      <>
+        <PageHeader
+          title="Intent, with evidence."
+          description="Understand what moves a score â€” and which opportunities need a human."
+        >
+          <Badge tone="blue">Explainable intelligence</Badge>
+        </PageHeader>
+        <Empty
+          title="No customer intelligence yet"
+          text="Add a customer to begin recording intent and score history."
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <PageHeader
@@ -69,7 +90,7 @@ export function Intelligence({ openCustomer }: CustomerProps) {
           action={
             <select
               aria-label="Customer score ledger"
-              value={selected}
+              value={c.userId}
               onChange={(e) => setSelected(e.target.value)}
             >
               {data.customers.map((c) => (

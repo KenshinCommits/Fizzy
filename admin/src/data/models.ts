@@ -116,6 +116,8 @@ export interface Conversation {
   intentAfter: number;
   recommendedAction: string;
   conversationOutcome: string;
+  recordingUrl?: string | null;
+  retellCallId?: string | null;
   transcript: { role: "Customer" | "Agent"; text: string; time: string }[];
 }
 export interface Salesperson {

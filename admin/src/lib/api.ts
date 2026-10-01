@@ -233,6 +233,8 @@ function mapConversation(c: any): Conversation {
     intentAfter: c.scoreAfter || 0,
     recommendedAction: c.recommendedAction || "",
     conversationOutcome: c.outcome || c.status || "",
+    recordingUrl: c.recordingUrl || null,
+    retellCallId: c.retellCallId || null,
     transcript: (c.transcript || []).map((t: any) => ({
       role: t.role === "agent" ? "Agent" : "Customer",
       text: t.content || t.text || "",

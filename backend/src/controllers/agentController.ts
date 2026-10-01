@@ -201,6 +201,60 @@ export class AgentController {
       res.status(500).json({ error: 'Failed to fetch conversations' });
     }
   }
+
+  async getConversation(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const conversation = await Conversation.findById(id).populate('userId', 'email firstName lastName');
+      if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
+      res.json({ conversation });
+    } catch (error) {
+      logger.error('Get conversation error:', error);
+      res.status(500).json({ error: 'Failed to fetch conversation' });
+    }
+  }
+
+  /**
+   * GET /api/agent/conversations/:id/recording
+   * Returns the Retell recording URL for a conversation.
+   * Uses cached recordingUrl if available; otherwise fetches from Retell API.
+   */
+  async getRecording(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const conversation = await Conversation.findById(id);
+      if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
+
+      // Use cached URL first
+      if (conversation.recordingUrl) {
+        return res.json({ recordingUrl: conversation.recordingUrl });
+      }
+
+      // Fetch from Retell API if we have a callId
+      if (!conversation.retellCallId) {
+        return res.json({ recordingUrl: null, message: 'No call ID associated with this conversation' });
+      }
+
+      try {
+        const callDetails = await retellService.getCallDetails(conversation.retellCallId);
+        const recordingUrl = callDetails?.recording_url ?? null;
+
+        // Cache it for future requests
+        if (recordingUrl) {
+          conversation.recordingUrl = recordingUrl;
+          await conversation.save();
+        }
+
+        res.json({ recordingUrl });
+      } catch {
+        // Retell API unavailable — return null gracefully
+        res.json({ recordingUrl: null, message: 'Recording not yet available' });
+      }
+    } catch (error) {
+      logger.error('Get recording error:', error);
+      res.status(500).json({ error: 'Failed to fetch recording' });
+    }
+  }
 }
 
 export const agentController = new AgentController();

@@ -11,6 +11,7 @@ export interface IConversation extends Document {
   userId?: Types.ObjectId;
   leadId?: Types.ObjectId;
   retellCallId?: string;
+  recordingUrl?: string;
   direction: 'inbound' | 'outbound';
   triggerReason?: string;
   startedAt: Date;
@@ -39,6 +40,7 @@ const conversationSchema = new Schema<IConversation>(
     userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     leadId: { type: Schema.Types.ObjectId, ref: 'Lead', index: true },
     retellCallId: { type: String, index: true },
+    recordingUrl: { type: String },
     direction: { type: String, enum: ['inbound', 'outbound'], required: true },
     triggerReason: { type: String },
     startedAt: { type: Date, required: true, default: Date.now },

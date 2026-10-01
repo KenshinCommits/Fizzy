@@ -100,7 +100,6 @@ const navigation: {
     section: "OPERATIONS",
     items: [
       ["team", "Team", UsersRound],
-      ["notifications", "Notifications", Bell],
       ["settings", "Settings", Settings],
     ],
   },
@@ -279,7 +278,7 @@ function Workspace() {
             aria-label="Fizzi dashboard"
             className="wordmark"
           >
-            fizzi<span>®</span>
+            fizzy<span>®</span>
             <i />
           </a>
           <button
