@@ -2,15 +2,15 @@ import {
   Activity,
   ArrowUpRight,
   AudioLines,
+  BarChart4,
   Bell,
   Bot,
-  ChartNoAxesCombined,
   Check,
   ChevronDown,
-  CircleHelp,
   Columns3,
   Command,
-  ContactRound,
+  Contact2,
+  HelpCircle,
   LayoutDashboard,
   Menu,
   Package,
@@ -25,6 +25,11 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
+
+// Alias missing icons to available equivalents
+const ChartNoAxesCombined = BarChart4;
+const ContactRound = Contact2;
+const CircleHelp = HelpCircle;
 import { Component, useEffect, useState, type ReactNode } from "react";
 import { CustomerProfile } from "./components/CustomerProfile";
 import {
