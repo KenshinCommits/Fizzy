@@ -5,8 +5,33 @@ import { connectDatabase } from './config/database.js';
 import { logger } from './config/logger.js';
 import { initializeSocket } from './realtime/socketManager.js';
 import { scoringService } from './services/scoringService.js';
+import { User } from './models/User.js';
 
 const server = http.createServer(app);
+
+async function ensureDemoAdmin() {
+  const email = 'demo@123.com';
+  const existing = await User.findOne({ email });
+  if (existing) {
+    if (existing.role !== 'admin' || !existing.isActive) {
+      existing.role = 'admin';
+      existing.isActive = true;
+      await existing.save();
+    }
+    return;
+  }
+
+  await User.create({
+    email,
+    password: '123456',
+    firstName: 'Demo',
+    lastName: 'Admin',
+    role: 'admin',
+    customerType: 'd2c',
+    isActive: true,
+  });
+  logger.info('Demo admin account is ready');
+}
 
 // Initialize Socket.IO
 initializeSocket(server);
@@ -16,6 +41,7 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDatabase();
+    await ensureDemoAdmin();
     
     // Initialize scoring service
     await scoringService.initialize();

@@ -24,6 +24,9 @@ import slide4 from "@/assets/slide-4.png";
 
 import CanScene3D from "@/components/CanScene3D";
 import FluidRibbon from "@/components/FluidRibbon";
+import { getStoredUser } from "@/lib/auth";
+
+
 
 
 
@@ -111,6 +114,9 @@ const flavors: Flavor[] = [
   },
 ];
 
+const flavorCanImages = flavors.map((flavor) => flavor.image);
+const flavorColors = flavors.map((flavor) => flavor.color);
+
 type BasketLine = { id: string; quantity: number };
 const BASKET_KEY = "fizzy-basket-v1";
 
@@ -126,6 +132,7 @@ export default function Carousel({ slice }: CarouselProps) {
   const [basket, setBasket] = useState<BasketLine[]>([]);
   const [panel, setPanel] = useState<"menu" | "basket" | "details" | "story" | null>(null);
   const [toast, setToast] = useState("");
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   const currentFlavorRef = useRef(activeFlavor);
   const stRef = useRef<ScrollTrigger | null>(null);
@@ -238,7 +245,6 @@ export default function Carousel({ slice }: CarouselProps) {
       ctx.revert();
     };
   }, [goToFlavor]);
-
   // Clean up component-owned timelines and tweens on unmount
   useEffect(() => {
     return () => {
@@ -249,6 +255,17 @@ export default function Carousel({ slice }: CarouselProps) {
       if (titleRef.current && descRef.current && countRef.current) {
         gsap.killTweensOf([countRef.current, titleRef.current, descRef.current]);
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    const syncAuth = () => setIsSignedIn(Boolean(getStoredUser()));
+    syncAuth();
+    window.addEventListener("fizzi-auth-change", syncAuth);
+    window.addEventListener("storage", syncAuth);
+    return () => {
+      window.removeEventListener("fizzi-auth-change", syncAuth);
+      window.removeEventListener("storage", syncAuth);
     };
   }, []);
 
@@ -284,6 +301,10 @@ export default function Carousel({ slice }: CarouselProps) {
   }, [toast]);
 
   const addToBasket = (id: string) => {
+    if (!isSignedIn) {
+      window.location.assign("/login?next=/shop");
+      return;
+    }
     setBasket((items) => {
       const existing = items.find((item) => item.id === id);
       return existing
@@ -363,17 +384,17 @@ export default function Carousel({ slice }: CarouselProps) {
           </a>
 
           <div className="header-actions">
-            <button
+            <a
               className="login-trigger"
-              type="button"
-              aria-label="Log in"
+              href={isSignedIn ? "/shop" : "/login?next=/shop"}
+              aria-label={isSignedIn ? "Open shop" : "Log in"}
             >
-              <span>Log in</span>
-            </button>
+              <span>{isSignedIn ? "Shop" : "Log in"}</span>
+            </a>
             <button
               className="basket-trigger"
               type="button"
-              onClick={() => setPanel("basket")}
+              onClick={() => isSignedIn ? setPanel("basket") : window.location.assign("/login?next=/shop")}
               aria-label={`Open basket, ${totalItems} items`}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
@@ -402,12 +423,21 @@ export default function Carousel({ slice }: CarouselProps) {
 
           <div className="flavor-title-wrap">
             <h1 className="flavor-title" ref={titleRef}>
-              FRESH. FRUITY. FIZZY.
+              FIZZ YOUR DAY.
             </h1>
           </div>
 
           <p className="flavor-description" ref={descRef}>
-            GOOD VIBES IN EVERY SIP.
+            {activeFlavor === 0
+              ? "Watermelon Crush"
+              : currentFlavor.title
+                  .map((w) =>
+                    w
+                      .split(" ")
+                      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+                      .join(" ")
+                  )
+                  .join(" ")}
           </p>
 
           <p className="flavor-price">
@@ -444,6 +474,10 @@ export default function Carousel({ slice }: CarouselProps) {
             href="#mixes"
             onClick={(event) => {
               event.preventDefault();
+              if (!isSignedIn) {
+                window.location.assign("/login?next=/shop");
+                return;
+              }
               setToast("Your mixed case is ready to explore");
             }}
           >
@@ -454,8 +488,8 @@ export default function Carousel({ slice }: CarouselProps) {
         {/* Photorealistic 3D Cans Viewport: Exactly in the middle with 3D cylinder roll physics */}
         <CanScene3D
           activeFlavor={activeFlavor}
-          canImages={flavors.map((f) => f.image)}
-          flavorColors={flavors.map((f) => f.color)}
+          canImages={flavorCanImages}
+          flavorColors={flavorColors}
         />
 
         {/* Decorative fruit layer removed to keep the stage clean and product-focused. */}
@@ -637,6 +671,10 @@ export default function Carousel({ slice }: CarouselProps) {
                   width: "100%",
                 }}
                 onClick={() => {
+                  if (!isSignedIn) {
+                    window.location.assign("/login?next=/shop");
+                    return;
+                  }
                   setPanel(null);
                   setToast("Checkout is ready for your next step");
                 }}

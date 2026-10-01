@@ -28,6 +28,14 @@ const BASE_URL =
 
 const TOKEN_KEY = "fizzi-admin-token";
 
+if (typeof window !== "undefined") {
+  const token = new URLSearchParams(window.location.search).get("token");
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+    window.history.replaceState({}, "", `${window.location.pathname}${window.location.hash || "#/dashboard"}`);
+  }
+}
+
 function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }

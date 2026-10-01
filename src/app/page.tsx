@@ -15,8 +15,6 @@ import { components } from "@/slices";
 import Hero from "@/slices/Hero";
 import SkyDive from "@/slices/SkyDive";
 import Carousel from "@/slices/Carousel";
-import AlternatingText from "@/slices/AlternatingText";
-import BigText from "@/slices/BigText";
 
 export const metadata: Metadata = {
   title: "FIZZY | Cooler Sips. Bigger Days.",
@@ -34,8 +32,7 @@ export default function Index() {
     <main>
       <Hero slice={dummySlice} index={0} slices={[]} context={{}} />
       <SkyDive slice={dummySlice} index={1} slices={[]} context={{}} />
-      <AlternatingText slice={dummySlice} index={2} slices={[]} context={{}} />
-      <Carousel slice={dummySlice} index={3} slices={[]} context={{}} />
+      <Carousel slice={dummySlice} index={2} slices={[]} context={{}} />
     </main>
   );
 }

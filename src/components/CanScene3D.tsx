@@ -21,7 +21,6 @@ export default function CanScene3D({
   const cansRef = useRef<THREE.Group[]>([]);
   const spinGroupsRef = useRef<THREE.Group[]>([]);
   const shadowsRef = useRef<THREE.Mesh[]>([]);
-  const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const animFrameId = useRef<number | null>(null);
   const prevActiveRef = useRef(activeFlavor);
   const dragAngleRef = useRef({ value: 0 });
@@ -263,16 +262,6 @@ export default function CanScene3D({
     };
     window.addEventListener("resize", handleResize);
 
-    // 7. Mouse move tracking for 3D parallax tilt
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      mousePos.current.targetX = x;
-      mousePos.current.targetY = y;
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-
     const handlePointerDown = (event: PointerEvent) => {
       isDraggingRef.current = true;
       dragOriginXRef.current = event.clientX;
@@ -327,18 +316,14 @@ export default function CanScene3D({
       animFrameId.current = requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
 
-      // Smooth mouse lerp
-      mousePos.current.x += (mousePos.current.targetX - mousePos.current.x) * 0.08;
-      mousePos.current.y += (mousePos.current.targetY - mousePos.current.y) * 0.08;
-
-      // Ambient floating & mouse tilt on active can
+      // Keep the active can front-facing while it floats.
       cansRef.current.forEach((can, i) => {
         const shadow = shadowsRef.current[i];
         if (Math.abs(can.position.x) < 0.8) {
-          // Can is close to center: apply subtle breathing float and 3D mouse reaction
           const floatOffset = Math.sin(time * 2.2) * 0.05;
           can.position.y = floatOffset;
-          can.rotation.x = -mousePos.current.y * 0.16;
+          can.rotation.x = 0;
+          can.rotation.z = 0;
 
           if (shadow) {
             shadow.position.y = -CAN_HEIGHT / 2 - 0.28 + floatOffset * 0.3;
@@ -355,7 +340,6 @@ export default function CanScene3D({
     return () => {
       if (animFrameId.current) cancelAnimationFrame(animFrameId.current);
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("pointerdown", handlePointerDown);
       container.removeEventListener("pointermove", handlePointerMove);
       container.removeEventListener("pointerup", handlePointerUp);
@@ -389,7 +373,6 @@ export default function CanScene3D({
 
       const isCurrentActive = index === activeFlavor;
       const isPreviousActive = index === prevActiveRef.current;
-
       gsap.killTweensOf(can.position);
       gsap.killTweensOf(can.rotation);
       if (spinGroup) {
