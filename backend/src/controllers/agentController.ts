@@ -27,8 +27,8 @@ export class AgentController {
       const behavior = await behaviorService.calculateBehavior(new Types.ObjectId(userId));
       
       // Get cart
-      const cart = await Cart.findOne({ userId, status: 'active' })
-        .populate('items.productId', 'name price');
+      const cart = await Cart.findOne({ userId, abandoned: false })
+        .populate('items.product', 'name price');
 
       // Get last order
       const lastOrder = await Order.findOne({ userId })
@@ -45,7 +45,7 @@ export class AgentController {
 
       // Build cart summary
       const cartItems = cart?.items.map((item: any) => 
-        `${item.productId?.name || 'Product'} x${item.quantity}`
+        `${item.product.name} x${item.quantity}`
       ).join(', ') || 'Empty';
       const cartValue = cart?.subtotal || 0;
 

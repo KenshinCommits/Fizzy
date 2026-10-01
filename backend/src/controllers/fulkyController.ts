@@ -19,7 +19,7 @@ export class FulkyController {
 
   async context(req: any, res: Response) {
     const user = req.user;
-    const [cart, lastOrder] = await Promise.all([Cart.findOne({ userId: user._id, status: 'active' }).populate('items.productId', 'name price packSize'), Order.findOne({ userId: user._id }).sort({ createdAt: -1 })]);
+    const [cart, lastOrder] = await Promise.all([Cart.findOne({ userId: user._id, abandoned: false }).populate('items.product', 'name price packSize'), Order.findOne({ userId: user._id }).sort({ createdAt: -1 })]);
     res.json({ customer: { firstName: user.firstName, customerType: user.customerType }, cart: cart ? { items: cart.items, subtotal: cart.subtotal } : null, lastOrder: lastOrder ? { orderNumber: lastOrder.orderNumber, items: lastOrder.items.map(item => ({ name: item.productName, quantity: item.quantity })) } : null });
   }
 

@@ -30,9 +30,6 @@ export class OrderController {
 
         orderItems.push({
           product: product._id,
-          productId: product._id,
-          variantId: item.variantId,
-          productSnapshot: { name: product.name, sku: product.sku, description: product.description, packSize: product.packSize, images: product.images },
           productName: product.name,
           productSku: product.sku,
           quantity: item.quantity,
@@ -71,8 +68,8 @@ export class OrderController {
       );
 
       // Clear cart
-      await Cart.findOneAndUpdate({ userId, status: 'active' }, {
-        $set: { items: [], subtotal: 0, lastActivityAt: new Date() }
+      await Cart.findOneAndUpdate({ userId, abandoned: false }, {
+        $set: { items: [], subtotal: 0 }
       });
 
       logger.info(`Order created: ${orderNumber} for user ${userId}`);

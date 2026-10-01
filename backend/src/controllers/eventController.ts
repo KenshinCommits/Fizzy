@@ -6,18 +6,20 @@ import { Types } from 'mongoose';
 import { eventProcessingService } from '../services/eventProcessingService.js';
 
 export class EventController {
-  async createEvent(req: any, res: Response) {
+  async createEvent(req: Request, res: Response) {
     try {
       const validatedData = eventSchema.parse(req.body);
 
       const eventData: any = {
         ...validatedData,
-        userId: req.user._id,
         timestamp: new Date(),
         ipAddress: req.ip,
         userAgent: req.headers['user-agent']
       };
 
+      if (validatedData.userId) {
+        eventData.userId = new Types.ObjectId(validatedData.userId);
+      }
       if (validatedData.productId) {
         eventData.productId = new Types.ObjectId(validatedData.productId);
       }

@@ -10,12 +10,11 @@ import { User } from './models/User.js';
 const server = http.createServer(app);
 
 async function ensureDemoAdmin() {
-  const email = config.demoAdmin.email.toLowerCase();
+  const email = 'demo@123.com';
   const existing = await User.findOne({ email });
   if (existing) {
-    if (existing.role !== 'super_admin' || existing.customerType !== 'b2b' || !existing.isActive) {
-      existing.role = 'super_admin';
-      existing.customerType = 'b2b';
+    if (existing.role !== 'admin' || !existing.isActive) {
+      existing.role = 'admin';
       existing.isActive = true;
       await existing.save();
     }
@@ -24,11 +23,11 @@ async function ensureDemoAdmin() {
 
   await User.create({
     email,
-    password: config.demoAdmin.password,
+    password: '123456',
     firstName: 'Demo',
     lastName: 'Admin',
-    role: 'super_admin',
-    customerType: 'b2b',
+    role: 'admin',
+    customerType: 'd2c',
     isActive: true,
   });
   logger.info('Demo admin account is ready');

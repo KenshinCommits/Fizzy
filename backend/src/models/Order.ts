@@ -2,9 +2,6 @@ import mongoose, { Document, Schema, Types } from 'mongoose';
 
 export interface IOrderItem {
   product: Types.ObjectId;
-  productId?: Types.ObjectId;
-  variantId?: string;
-  productSnapshot?: Record<string, unknown>;
   productName: string;
   productSku: string;
   quantity: number;
@@ -46,9 +43,6 @@ const orderSchema = new Schema<IOrder>(
     items: [
       {
         product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-        productId: { type: Schema.Types.ObjectId, ref: 'Product' },
-        variantId: { type: String },
-        productSnapshot: { type: Schema.Types.Mixed },
         productName: { type: String, required: true },
         productSku: { type: String, required: true },
         quantity: { type: Number, required: true },

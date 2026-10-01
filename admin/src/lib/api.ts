@@ -44,10 +44,26 @@ function setToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token);
 }
 
+/** Auto-login with the seeded admin credentials. */
 async function ensureAdminToken(): Promise<void> {
   if (getToken()) return;
-  window.location.assign("http://localhost:3000/login");
-  throw new Error("Sign in through the shared Fizzi login portal.");
+
+  const res = await fetch(`${BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: "admin@fizzi.in",
+      password: "Fizzi@Admin2026",
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Admin login failed. Is the backend running?");
+  }
+
+  const { token } = await res.json();
+  setToken(token);
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {

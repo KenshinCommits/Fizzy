@@ -44,7 +44,6 @@ export class AuthController {
       res.status(201).json({
         user: {
           id: user._id,
-          name: `${user.firstName} ${user.lastName}`.trim(),
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -94,7 +93,6 @@ export class AuthController {
       res.json({
         user: {
           id: user._id,
-          name: `${user.firstName} ${user.lastName}`.trim(),
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,

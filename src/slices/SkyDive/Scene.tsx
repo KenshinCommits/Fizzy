@@ -137,7 +137,16 @@ export default function Scene({ sentence, flavor }: SkyDiveProps) {
         duration: 0.5,
         ease: "back.in(1.7)",
       })
-      .to(cloudsRef.current.position, { z: 7, duration: 0.5 });
+      .to(cloudsRef.current.position, { z: 7, duration: 0.5 })
+      .to(
+        ".story-container",
+        {
+          opacity: 1,
+          visibility: "visible",
+          duration: 0.5,
+        },
+        "-=0.5"
+      );
 
     ScrollTrigger.sort();
     ScrollTrigger.refresh();

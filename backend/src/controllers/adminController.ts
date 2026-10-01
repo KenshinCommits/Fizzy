@@ -400,13 +400,13 @@ export class AdminController {
   async getAbandonedCarts(req: Request, res: Response) {
     try {
       const { limit = 50, skip = 0 } = req.query;
-      const carts = await Cart.find({ status: 'abandoned' })
+      const carts = await Cart.find({ abandoned: true })
         .sort({ abandonedAt: -1 })
         .limit(parseInt(limit as string))
         .skip(parseInt(skip as string))
         .populate('userId', 'email firstName lastName')
-        .populate('items.productId', 'name legacyProductId slug');
-      const total = await Cart.countDocuments({ status: 'abandoned' });
+        .populate('items.product', 'name legacyProductId slug');
+      const total = await Cart.countDocuments({ abandoned: true });
       res.json({ carts, total });
     } catch (error) {
       logger.error('Get abandoned carts error:', error);

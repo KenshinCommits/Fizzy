@@ -31,9 +31,5 @@ export const config = {
   },
   session: {
     secret: process.env.SESSION_SECRET || 'session-secret-change-me'
-  },
-  demoAdmin: {
-    email: process.env.DEMO_ADMIN_EMAIL || 'demo@123.com',
-    password: process.env.DEMO_ADMIN_PASSWORD || '123456'
   }
 };

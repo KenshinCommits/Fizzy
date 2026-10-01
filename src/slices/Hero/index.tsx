@@ -125,36 +125,27 @@ const Hero = ({ slice }: HeroProps): JSX.Element => {
           <div className="grid auto-rows-min place-items-center text-center">
             <h1 className="hero-header text-7xl font-black uppercase leading-[.8] text-brand-navy md:text-[9rem] lg:text-[13rem]">
               <TextSplitter
-                text="COOLER SIPS. BIGGER DAYS."
+                text="Fruity. Fresh. Fizzy."
                 wordDisplayStyle="block"
                 className="hero-header-word"
               />
             </h1>
             <div className="hero-subheading mt-12 text-5xl font-semibold text-brand-navy lg:text-6xl">
-              FIZZY WATERMELON CRUSH
+              GOOD VIBES IN EVERY SIP.
             </div>
             <div className="hero-body text-2xl font-normal text-brand-navy mt-4">
               A modern canned beverage brand featuring craft sodas, sparkling fruit juices, and summer coolers.
             </div>
-            <Button
-              buttonLink="/login?next=/shop"
-              buttonText="Shop Now"
-              className="hero-button mt-12"
-            />
           </div>
         </div>
 
-        <div className="text-side relative z-[80] grid h-screen items-center gap-4 md:grid-cols-2">
-          <PrismicNextImage
-            className="w-full md:hidden"
-            field={slice.primary.cans_image}
-          />
-          <div>
-            <h2 className="text-side-heading text-balance text-6xl font-black uppercase text-brand-navy lg:text-8xl">
-              <TextSplitter text="FIZZY" />
+        <div className="text-side relative z-20 grid h-screen items-center gap-4 md:grid-cols-2 px-8 md:px-16">
+          <div className="max-w-xl">
+            <h2 className="text-side-heading text-balance text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight text-brand-navy">
+              <TextSplitter text="FRESH. FRUITY. FIZZY." />
             </h2>
-            <div className="text-side-body mt-4 max-w-xl text-balance text-xl font-normal text-brand-navy">
-              <p>Watermelon Crush</p>
+            <div className="text-side-body mt-4 text-balance text-base md:text-lg font-bold uppercase tracking-wider text-brand-navy opacity-80">
+              <p>GOOD VIBES IN EVERY SIP.</p>
             </div>
           </div>
         </div>
