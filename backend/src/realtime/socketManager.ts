@@ -8,7 +8,7 @@ let io: Server;
 export const initializeSocket = (server: HTTPServer) => {
   io = new Server(server, {
     cors: {
-      origin: (origin, callback) => callback(null, !origin || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) || origin === config.cors.origin),
+      origin: config.cors.origin,
       credentials: true
     }
   });

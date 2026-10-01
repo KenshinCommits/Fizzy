@@ -28,8 +28,6 @@ import { getStoredUser } from "@/lib/auth";
 
 
 
-
-
 type Flavor = {
   id: string;
   title: string[];
@@ -245,6 +243,7 @@ export default function Carousel({ slice }: CarouselProps) {
       ctx.revert();
     };
   }, [goToFlavor]);
+
   // Clean up component-owned timelines and tweens on unmount
   useEffect(() => {
     return () => {

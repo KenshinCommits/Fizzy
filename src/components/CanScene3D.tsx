@@ -240,17 +240,6 @@ export default function CanScene3D({
       shadowsRef.current.push(shadowMesh);
     });
 
-    // Start initial continuous spin on the active can
-    const initialSpinGroup = spinGroupsRef.current[activeFlavor];
-    if (initialSpinGroup) {
-      gsap.to(initialSpinGroup.rotation, {
-        y: `+=${Math.PI * 2}`,
-        duration: 3.2,
-        ease: "none",
-        repeat: -1,
-      });
-    }
-
     // 6. Handle window resize
     const handleResize = () => {
       if (!container || !camera || !renderer) return;
@@ -373,16 +362,13 @@ export default function CanScene3D({
 
       const isCurrentActive = index === activeFlavor;
       const isPreviousActive = index === prevActiveRef.current;
+
       gsap.killTweensOf(can.position);
       gsap.killTweensOf(can.rotation);
       if (spinGroup) {
         gsap.killTweensOf(spinGroup.rotation);
         if (isCurrentActive) gsap.set(spinGroup.rotation, { y: 0 });
       }
-
-      const rollLean = isCurrentActive || isPreviousActive
-        ? (activeFlavor > prevActiveRef.current ? -0.22 : 0.22)
-        : 0;
 
       // Incoming active can starts just off the screen on the right/left and rolls into place.
       if (isCurrentActive) {
@@ -414,19 +400,6 @@ export default function CanScene3D({
           repeat: -1,
         });
       }
-
-      // Subtle roll lean on Z-axis (settles back to 0)
-      gsap.timeline()
-        .to(can.rotation, {
-          z: rollLean,
-          duration: 0.45,
-          ease: "power2.out",
-        })
-        .to(can.rotation, {
-          z: 0,
-          duration: 0.5,
-          ease: "power2.inOut",
-        });
 
       // Shadow position & scale
       if (shadow) {
