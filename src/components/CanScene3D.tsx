@@ -86,18 +86,13 @@ export default function CanScene3D({
     backLight.position.set(0, 4, -3);
     scene.add(backLight);
 
-    // 3. Materials
-    const metalSilverMaterial = new THREE.MeshStandardMaterial({
-      color: 0xe6e6e6,
-      metalness: 0.94,
-      roughness: 0.20,
-    });
-
-    const lidTopMaterial = new THREE.MeshStandardMaterial({
-      color: 0xd0d0d0,
-      metalness: 0.90,
-      roughness: 0.28,
-    });
+    // 3. Texture background color palette matching each flavor
+    const CAN_BG_COLORS = [
+      "#fef9da", // Watermelon Crush
+      "#fdf9dc", // Yuzu Citrus Fizz
+      "#fefad4", // Berry Wave
+      "#fff8cc", // Mango Splash
+    ];
 
     // 4. Create Ground Shadow texture
     const shadowCanvas = document.createElement("canvas");
@@ -129,6 +124,21 @@ export default function CanScene3D({
     canImages.forEach((imgUrl, index) => {
       const canGroup = new THREE.Group();
       const spinGroup = new THREE.Group();
+
+      const canBgColor = CAN_BG_COLORS[index % CAN_BG_COLORS.length] || "#fef9da";
+
+      // Color-matched satin rim and lid materials matching the can texture background
+      const canRimMaterial = new THREE.MeshStandardMaterial({
+        color: canBgColor,
+        metalness: 0.12,
+        roughness: 0.32,
+      });
+
+      const canLidMaterial = new THREE.MeshStandardMaterial({
+        color: canBgColor,
+        metalness: 0.15,
+        roughness: 0.38,
+      });
 
       // Can body texture
       const texture = textureLoader.load(imgUrl);
@@ -164,7 +174,7 @@ export default function CanScene3D({
       bodyMesh.rotation.y = Math.PI / 2 + 0.95;
       spinGroup.add(bodyMesh);
 
-      // Top taper (aluminum bevel inward to rim)
+      // Top taper (bevel inward to rim) - matches texture background
       const topTaperGeo = new THREE.CylinderGeometry(
         CAN_RADIUS * 0.88,
         CAN_RADIUS,
@@ -173,31 +183,31 @@ export default function CanScene3D({
         1,
         true
       );
-      const topTaper = new THREE.Mesh(topTaperGeo, metalSilverMaterial);
+      const topTaper = new THREE.Mesh(topTaperGeo, canRimMaterial);
       topTaper.position.y = CAN_HEIGHT / 2 + 0.10;
       spinGroup.add(topTaper);
 
-      // Top silver rim (torus ring)
+      // Top rim (torus ring) - matches texture background
       const topRimGeo = new THREE.TorusGeometry(CAN_RADIUS * 0.88, 0.032, 16, 64);
-      const topRim = new THREE.Mesh(topRimGeo, metalSilverMaterial);
+      const topRim = new THREE.Mesh(topRimGeo, canRimMaterial);
       topRim.rotation.x = Math.PI / 2;
       topRim.position.y = CAN_HEIGHT / 2 + 0.20;
       spinGroup.add(topRim);
 
-      // Top aluminum lid disk
+      // Top lid disk - matches texture background
       const topLidGeo = new THREE.CircleGeometry(CAN_RADIUS * 0.86, 64);
-      const topLid = new THREE.Mesh(topLidGeo, lidTopMaterial);
+      const topLid = new THREE.Mesh(topLidGeo, canLidMaterial);
       topLid.rotation.x = -Math.PI / 2;
       topLid.position.y = CAN_HEIGHT / 2 + 0.19;
       spinGroup.add(topLid);
 
-      // Pull tab detail on top lid
+      // Pull tab detail on top lid - matches texture background
       const tabGeo = new THREE.BoxGeometry(0.24, 0.015, 0.42);
-      const tabMesh = new THREE.Mesh(tabGeo, metalSilverMaterial);
+      const tabMesh = new THREE.Mesh(tabGeo, canRimMaterial);
       tabMesh.position.set(0, CAN_HEIGHT / 2 + 0.205, 0.14);
       spinGroup.add(tabMesh);
 
-      // Bottom taper (aluminum bevel inward to base)
+      // Bottom taper (bevel inward to base) - matches texture background
       const botTaperGeo = new THREE.CylinderGeometry(
         CAN_RADIUS,
         CAN_RADIUS * 0.86,
@@ -206,13 +216,13 @@ export default function CanScene3D({
         1,
         true
       );
-      const botTaper = new THREE.Mesh(botTaperGeo, metalSilverMaterial);
+      const botTaper = new THREE.Mesh(botTaperGeo, canRimMaterial);
       botTaper.position.y = -CAN_HEIGHT / 2 - 0.11;
       spinGroup.add(botTaper);
 
-      // Bottom concave rim
+      // Bottom concave rim - matches texture background
       const botRimGeo = new THREE.TorusGeometry(CAN_RADIUS * 0.86, 0.032, 16, 64);
-      const botRim = new THREE.Mesh(botRimGeo, metalSilverMaterial);
+      const botRim = new THREE.Mesh(botRimGeo, canRimMaterial);
       botRim.rotation.x = Math.PI / 2;
       botRim.position.y = -CAN_HEIGHT / 2 - 0.22;
       spinGroup.add(botRim);
